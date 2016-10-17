@@ -30,6 +30,9 @@ var CAMERA
 var PROJECTOR
 var SCENE
 var VIEWERDIV
+var BOUNDINGSPHERE
+var ORBITCONTROLS
+var ORIGINALMATERIALS
 
 //base application object containing Spectacles functions and properties
 var SPECTACLES = function (divToBind, jsonFileData, callback) {
@@ -171,6 +174,7 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
         SPECT.orbitControls.target.set(0, 100, 0);
         //push to global variable for pivot
         CAMERA = SPECT.camera;
+        ORBITCONTROLS = SPECT.orbitControls;
 
         //a clock.  the camera uses this
         SPECT.clock = new THREE.Clock();
@@ -894,6 +898,9 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
             }
         }
     };
+    
+    //push to global Variable
+    ORIGINALMATERIALS = SPECT.originalMaterials;
 
     //function to compute the bounding sphere of the model
     //we use this for the zoomExtents function and in the createLights function below
@@ -1582,6 +1589,7 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
             }
         }
         var attributeSet = Array.from(new Set(attributeList));
+        console.log(attributeSet);
         //attributeSet.shift();
         SPECT.attributeSet = attributeSet;
         //console.log(SPECT.attributeSet);
@@ -2878,15 +2886,52 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
 
 
 var PIVOT = function(divToBind,callback){
-    //object selection
+    //*******************Pulling in Global Variables and creating local ones//
+    var elements = ELEMENTS;
+    var allAttributes;
+    var orbitControls = ORBITCONTROLS;
+    var boundingSphere = BOUNDINGSPHERE;
     var camera = CAMERA;
     var projector = PROJECTOR;
     var elements = ELEMENTS;
     var container = document.getElementById('Spectacles_output');
     var children = container.children;
     var canvas = {};
-    var sidebar = document.getElementById("side");
+    var sidebar = $("#sidebar").offcanvas({autohide: false, toggle:false});
+    var sideList = document.getElementById("side");
+    var filterBar = $("#filterbar").offcanvas({autohide:false, toggle:false});
+    var filterList = document.getElementById("filters");
     var populated;
+    var picked;
+    var attributeSet;
+    var originalMaterials = ORIGINALMATERIALS;
+    var pickedMat = new THREE.MeshLambertMaterial({
+            color: "rgb(0,255,255)",
+            ambient: "rgb(0,255,255)",
+            side: 2
+        });
+    var filterNames = [];
+    var filterVals = [];
+    
+    //***************generate list of all available attributes*********//
+    var tempList = [];
+    for(i=0;i<elements.length;i++){
+        var obj = elements[0];
+        attL = obj.userData;
+            //console.log(attL);
+            //console.log(Object.keys(attL).length);
+            //console.log(Object.keys(attL)[1]);
+            for(j=0;j<Object.keys(attL).length;j++){
+                //console.log(attL[j]);
+                //if (Object.keys(attL)[j] != 'layer'){
+                    tempList.push(Object.keys(attL)[j]);
+                //}
+            }
+    }
+    var allAttributes = Array.from(new Set(tempList));
+    //console.log(allAttributes);
+    
+    //***************************object selection**********************//
     
     container.onclick = function(e){
         e.preventDefault();
@@ -2901,16 +2946,10 @@ var PIVOT = function(divToBind,callback){
         var containerHeight = container.height;
         //window.addEventListener('mousedown', onMouseDown, false);
 
-        var mat = new THREE.MeshLambertMaterial({
-                    color: "rgb(0,255,255)",
-                    ambient: "rgb(0,255,255)",
-                    side: 2
-                });
-
         var win = $(window);
         var offsetX = canvas.offset().left - win.scrollLeft();
         var offsetY = canvas.offset().top - win.scrollTop();
-        //Generate Mouse Vector
+        //******************Generate Mouse Vector*****************************//
         var mouse3D = new THREE.Vector3();
         mouse3D.x = 2*((e.clientX - offsetX)/canvas.width())-1;
         mouse3D.y = 1-2*((e.clientY - offsetY)/canvas.height());
@@ -2919,27 +2958,29 @@ var PIVOT = function(divToBind,callback){
         mouse3D.normalize();
         var raycaster = new THREE.Raycaster(camera.position, mouse3D);
         var intersects = raycaster.intersectObjects(elements);
+        //********************If something was clicked on********************//
         if(intersects[0] != undefined){
-            var picked = intersects[0].object;
-            picked.material = mat;
+            picked = intersects[0].object;
+            picked.material = pickedMat;
         }
         
         if(intersects[0] !== undefined){
-            console.log(intersects[0]);
-            //var sidebar = document.getElementById("side");
-            //var populated;
-            if(sidebar.children.length === 1){
-                $("#wrapper").toggleClass("toggled");
+            console.log(sideList.children.length);
+            if(sideList.children.length === 0){
+                $("#sidebar").offcanvas("toggle");
+                //$("#wrapper").toggleClass("toggled");
+                //$("#side").css("visibility","hidden");
                 populated = false;
             }
             else{
                 populated = true;
             }
             //Clear sideBar
-            while(sidebar.children.length > 1){
-                sidebar.removeChild(sidebar.lastChild);
+            while(sideList.children.length > 0){
+                sideList.removeChild(sideList.lastChild);
             }
             //add attributes to sidebar
+            var originalMat = picked.material;
             var data = picked.userData;
             for (var key in data) {
                 if (data.hasOwnProperty(key)) {
@@ -2951,20 +2992,20 @@ var PIVOT = function(divToBind,callback){
                         var text = document.createTextNode(attribute);
                         link.appendChild(text);
                         li.appendChild(link);
-                        sidebar.appendChild(li);                
+                        sideList.appendChild(li);                
                     }
                 }
             }
-            //toggle sidebar
-//            if(!populated){
-//                $("#wrapper").toggleClass("toggled");
-//            }
         }
-        else if(intersects[0] === undefined && sidebar.children.length > 1){
-            while(sidebar.children.length > 1){
-                sidebar.removeChild(sidebar.lastChild);
+        else if(intersects[0] === undefined && sideList.children.length > 0){
+            picked = undefined;
+            while(sideList.children.length > 0){
+                sideList.removeChild(sideList.lastChild);
             }
-            $("#wrapper").toggleClass("toggled");
+            $("#sidebar").offcanvas("toggle");
+            //$(.side-toggle).click();
+            //$("#wrapper").toggleClass("toggled");
+            //$("#side").css.visibility = "visible"
         }
     }
     
@@ -2988,7 +3029,6 @@ var PIVOT = function(divToBind,callback){
        return false;
     });
     
-    console.log(SELATTRIBUTES);
     //Populate Bootstrap layer drop-down dynamically with layers and checkboxes
     document.getElementById("PIVOTlayers").onclick = function(){
         var layerListing = document.getElementById('LayersListing')
@@ -3026,6 +3066,414 @@ var PIVOT = function(divToBind,callback){
             }
         }
     }
+    
+    //**************ZOOM EXTENTS FUNCTION*************************//
+    zoomExtents = function () {
+
+//        if (BOUNDINGSPHERE === undefined) SPECT.computeBoundingSphere();
+
+        //get the radius of the sphere and use it to compute an offset.  This is a mashup of theo's method
+        //and the one we use in platypus
+        var r = boundingSphere.radius;
+        var offset = r / Math.tan(Math.PI / 180.0 * orbitControls.object.fov * 0.5);
+        var vector = new THREE.Vector3(0, 0, 1);
+        var dir = vector.applyQuaternion(orbitControls.object.quaternion);
+        var newPos = new THREE.Vector3();
+        dir.multiplyScalar(offset * 1.25);
+        newPos.addVectors(boundingSphere.center, dir);
+        orbitControls.object.position.set(newPos.x, newPos.y, newPos.z);
+        orbitControls.target = new THREE.Vector3(boundingSphere.center.x, boundingSphere.center.y, boundingSphere.center.z);
+    };
+    
+    //************CALL ZOOM EXTENTS WHEN CLICKING ON MENU ITEM*************//
+    document.getElementById("PIVOTzoomExtents").onclick = function(){
+        zoomExtents();
+    }
+    
+    //******************ZOOM SELECTED FUNCTION**********//
+    zoomSelected = function(){
+
+        //return if init has not been called
+        //if ( SPECT.attributes.previousClickedElement === undefined) return;
+
+        //return if no selection
+        if (picked === undefined) return;
+
+        //get selected item and it's bounding sphere
+        var bndSphere;
+        var sel = picked;
+
+        //if the object is a mesh, grab the sphere
+        if (sel.hasOwnProperty('geometry')) {
+            //sel.computeBoundingSphere();
+            bndSphere = sel.geometry.boundingSphere;
+        }
+
+        //if the object is object3d, merge all of it's geometries and compute the sphere of the merge
+        else {
+            var geo = new THREE.Geometry();
+            for (var i in sel.children) {
+                geo.merge(sel.children[i].geometry);
+            }
+            geo.computeBoundingSphere();
+            bndSphere = geo.boundingSphere;
+        }
+
+
+        //get the radius of the sphere and use it to compute an offset.  This is a mashup of theo's method and ours from platypus
+        var r = bndSphere.radius;
+        var offset = r / Math.tan(Math.PI / 180.0 * orbitControls.object.fov * 0.5);
+        var vector = new THREE.Vector3(0, 0, 1);
+        var dir = vector.applyQuaternion(orbitControls.object.quaternion);
+        var newPos = new THREE.Vector3();
+        dir.multiplyScalar(offset * 1.1);
+        newPos.addVectors(bndSphere.center, dir);
+        orbitControls.object.position.set(newPos.x, newPos.y, newPos.z);
+        orbitControls.target = new THREE.Vector3(bndSphere.center.x, bndSphere.center.y, bndSphere.center.z);
+
+    };
+    
+    //****************CALL ZOOM EXTENTS WHEN MENU ITEM IS CLICKED************//
+    document.getElementById("PIVOTzoomSelected").onclick = function(){
+        zoomSelected();
+    }
+    
+    
+    //********************GENERATE LIST OF AVAILABLE ATTRIBUTES***********//
+    CreateAttributeList = function(){
+        var objects = elements;
+        //console.log(objects);
+        var attributeList = [];
+        for (i=0;i<objects.length;i++){
+            var obj = objects[i];
+            attL = obj.userData;
+            //console.log(attL);
+            //console.log(Object.keys(attL).length);
+            //console.log(Object.keys(attL)[1]);
+            for(j=0;j<Object.keys(attL).length;j++){
+                //console.log(attL[j]);
+                //if (Object.keys(attL)[j] != 'layer'){
+                    attributeList.push(Object.keys(attL)[j]);
+                //}
+            }
+        }
+        attributeSet = Array.from(new Set(attributeList));
+    }
+    
+    //******************POPULATE ATTRIBUTE LIST FOR COLOR CODING****************************//
+    document.getElementById("PIVOTrendering").onclick = function(){
+        var attL = document.getElementById("PIVOTattributeList");
+        while(attL.children.length > 2){
+            attL.removeChild(attL.lastChild);
+        }
+        CreateAttributeList();
+        for (var i=0;i<attributeSet.length;i++){
+            var attribute = attributeSet[i];
+            //console.log(attribute);
+            var li = document.createElement("li");
+            var link = document.createElement("a");
+            var text = document.createTextNode(attribute);
+            link.id = attribute;
+            link.href = "#";
+            link.appendChild(text);
+            link.onclick = function(){
+                //console.log(link);
+                colorByAttribute(this.id);
+            }
+            li.appendChild(link);
+            attL.appendChild(li); 
+        }
+        //console.log(attL);
+    }
+    
+    
+    //********************COLOR CODE BY ATTRIBUTE*************************//
+    //Color Code by attribute (ADDED BY DG) Not project specific
+    colorByAttribute = function(c){
+        var testList = [];
+        for(i=0;i<elements.length;i++){
+            var el = elements[i];
+            var elData = el.userData;
+            var listAtt = elData[c];
+            if (listAtt != undefined){
+                testList.push(listAtt);
+            }
+        }
+        var attSet = Array.from(new Set(testList));
+    
+        var numColors = attSet.length;
+        var colors = rgbColors(numColors);
+        var colorList = shuffle(colors);
+        var objs = elements;
+        var mainAttribute = c;
+        for (i=0;i<numColors;i++){
+            var color = colorList[i];
+            var colorString = "rgb("+color[0].toString()+","+color[1].toString()+","+color[2]+")";
+            var material = new THREE.MeshLambertMaterial({
+                color: colorString,
+                side: 2
+            });
+            var checkAtt = attSet[i];
+            for(j=0;j<objs.length;j++){
+                var obj = objs[j];
+                var objData = obj.userData;
+                var objAtt = objData[mainAttribute];
+                if(objAtt != null){
+                    if(objAtt == checkAtt){
+                        obj.material = material;
+                    }
+                }
+            }
+        }
+    };
+    
+    //*********************RENDERED DISPLAY***************************//
+    rendered = function(){
+//        $(".ColorConsole").css('visibility', 'hidden');
+//        $(".ColorHeader").css('visibility', 'hidden');
+        var objs = elements;
+        for(i=0;i<objs.length;i++){
+            var obj = objs[i];
+            var originalMat = originalMaterials[i];
+            obj.material = originalMat;
+        }
+    };
+    
+    //**********************CALL RENDERED FUNCTION WHEN MENU ITEM IS CLICKED******************//
+    document.getElementById("PIVOTrenderByMaterial").onclick = function(){
+        rendered();
+    }
+    
+    
+    //*****************SHOW FILTER BAR**************//
+    enableFilters = function(){
+        filterBar.offcanvas("show");
+    }
+    
+    
+    //***************ACTIVATE FILTER BAR WHEN MENU ITEM IS CLICKED****************//
+    document.getElementById("PIVOTenableFilters").onclick = function(){
+        enableFilters();
+    }
+    
+    //*******************Deactivate FILTER BAR*************************************//
+    disableFilters = function(){
+        filterBar.offcanvas("hide");
+    }
+    //*******************DEACTIVATE FILTERS WHEN MENU ITEM IS CLICKED**************//
+    document.getElementById("filterClose").onclick = function(){
+        disableFilters();
+    }
+    
+    //*******************ADD A FILTER TO FILTER BAR*****************************//
+    addFilter = function(){
+        CreateAttributeList();
+        //**CREATING HTML FOR DROPDOWN MENUS**//
+        //var DIV = document.createElement("div");
+        var dropdown  = document.createElement("li");
+        var name = document.createTextNode("Filter");
+        dropdown.setAttribute("class","dropdown");
+        var a = document.createElement("a");
+        a.appendChild(name);
+        a.setAttribute("href","#");
+        a.setAttribute("class","dropdown-toggle");
+        a.setAttribute("data-toggle","dropdown");
+        a.setAttribute("role","button");
+        a.setAttribute("aria-expanded","false");
+        var span = document.createElement("span");
+        span.setAttribute("class","caret");
+        a.appendChild(span);
+        dropdown.appendChild(a);
+        var menu = document.createElement("ul");
+        menu.setAttribute("class","dropdown-menu navmenu-nav");
+        menu.setAttribute("role","menu");
+        for(i=0;i<attributeSet.length;i++){
+            var text = document.createTextNode(attributeSet[i]);
+            var li = document.createElement("li");
+            var link = document.createElement("a");
+            link.setAttribute("href","#");
+            link.appendChild(text);
+            //UPON CLICKING ATTRIBUTE, GENERATE SECOND DROPDOWN FOR FILTER VALUES
+            link.onclick = function(){
+                var filt = this.innerHTML;
+                filterNames.push(filt);
+                var parentDropdown = this.parentElement.parentElement.parentElement;
+                parentDropdown.firstChild.innerHTML = this.innerHTML;
+                var newSpan = document.createElement("span");
+                newSpan.setAttribute("class","caret");
+                parentDropdown.firstChild.appendChild(newSpan);
+                //make list of all values for selected filter
+                var valList = [];
+                for (j=0;j<elements.length;j++){
+                    var obj = elements[j];
+                    var objData = obj.userData;
+                    if(objData[filt] !== undefined){
+                        valList.push(objData[filt]);
+                    }
+                }
+                var valSet = Array.from(new Set(valList));
+                //create dropdown for filter values
+                var filterDrop = document.createElement("li");
+                var filterName = document.createTextNode("Filter Value");
+                filterDrop.setAttribute("class","dropdown");
+                var clicker = document.createElement("a");
+                clicker.appendChild(filterName);
+                clicker.setAttribute("href","#");
+                clicker.setAttribute("class","dropdown-toggle");
+                clicker.setAttribute("data-toggle","dropdown");
+                clicker.setAttribute("role","button");
+                clicker.setAttribute("aria-expanded","false");
+                var carrot = document.createElement("span");
+                carrot.setAttribute("class","caret");
+                clicker.appendChild(carrot);
+                filterDrop.appendChild(clicker);
+                var filterMenu = document.createElement("ul");
+                filterMenu.setAttribute("class","dropdown-menu navmenu-nav");
+                filterMenu.setAttribute("role","menu");
+                for(j=0;j<valSet.length;j++){
+                    var filtText = document.createTextNode(valSet[j]);
+                    var item = document.createElement("li");
+                    var anchor = document.createElement("a");
+                    anchor.setAttribute("href","#");
+                    anchor.appendChild(filtText);
+                    anchor.onclick = function(){
+                        var filtVal = this.innerHTML;
+                        filterVals.push(filtVal);
+                        filteredSearch();
+                    }
+                    item.appendChild(anchor);
+                    filterMenu.appendChild(item);
+                }
+                filterDrop.appendChild(filterMenu);
+                filterList.appendChild(filterDrop);
+                //filterList.appendChild(filterDrop);
+                //DIV.appendChild(filterDrop);
+            }
+            li.appendChild(link);
+            menu.appendChild(li);        
+        }
+        dropdown.appendChild(menu);
+        filterList.appendChild(dropdown);
+        //DIV.appendChild(dropdown);
+        //filterList.appendChild(DIV);
+    }
+    
+    //********************FILTERED SEARCH FUNCTION********************************//
+    filteredSearch = function(){
+        rendered();
+        var dataElements = [];
+        var filterCheck;
+        var filterValCheck;
+        //material for non relevant elements
+        var hideMat = new THREE.MeshBasicMaterial({
+            color: "rgb(125,125,125)",
+            transparent: true,
+            side:2,
+            opacity: .5,
+        })
+        
+        if(SPECT.uiVariables.Scopes === 'All'){
+            //console.log(SPECT.filters);
+            var newFilters = [];
+            var newFilterVals = [];
+            for(i=1;i<SPECT.filters.length;i++){
+                newFilters.push(SPECT.filters[i]);
+            }
+            for(i=1;i<SPECT.filterVals.length;i++){
+                newFilterVals.push(SPECT.filterVals[i]);
+            }
+            filterCheck = newFilters;
+            filterValCheck = newFilterVals;
+            //console.log(newFilters);
+            //console.log(newFilterVals);
+        }
+        else{
+            filterCheck = SPECT.filters;
+            filterValCheck = SPECT.filterVals;
+        }
+        //Account for doubling up on parameters
+        var filterSet = Array.from(new Set(filterCheck));
+        //console.log(filterSet);
+        var filterLists = [];
+        for(i=0;i<filterSet.length;i++){
+            var valList = [];
+            valList.push(filterSet[i]);
+            for(j=0;j<filterCheck.length;j++){
+                if(filterCheck[j] === filterSet[i]){
+                    valList.push(filterValCheck[j]);
+                }
+            }
+            //console.log(valList);
+            filterLists.push(valList);
+        }
+        
+        var objs = SPECT.attributes.elementList;
+        for(i=0;i<objs.length;i++){
+            var obj = objs[i];
+            var objData = obj.userData;
+            var testList = [];
+            for (j=0;j<filterLists.length;j++){
+                var checkList = [];
+                for(k=1;k<filterLists[j].length;k++){
+                    var searchAtt = filterLists[j][0];
+                    var checkAtt = filterLists[j][k];
+                    var objAtt = objData[searchAtt];
+                    if(objAtt !== undefined){
+                        if(objAtt === checkAtt){
+                            checkList.push(true);
+                        }
+                        else{
+                            checkList.push(false);
+                        }
+                    }
+                    else{
+                        checkList.push(false);
+                    }
+                }
+                if(checkList.indexOf(true) !== -1){
+                    testList.push(true);
+                }
+                else{
+                    testList.push(false);
+                }
+            }
+            if(testList.indexOf(false) !== -1){
+                //Attempting to make non selected elements change material
+                SPECT.attributes.paintElement(obj,hideMat);
+                //obj.visible = false;
+            }
+            else{
+                SPECT.counter += 1;
+                updateCnsl();
+                SPECT.dataElements.push(obj);
+            }
+            //console.log(SPECT.guiList[1].Available_Attributes);
+            if(SPECT.uiVariables.Scopes !== 'All'){
+                var layer = objData.layer;
+                var checkLayer = SPECT.filterVals[0];
+                //console.log(checkLayer);
+                if(layer !== checkLayer){
+                    //obj.visible = true;
+                }
+            }
+        }
+    }
+    
+    //*******************CALL addFilter WHEN MENU ITEM IS CLICKED****************//
+    document.getElementById("filterAdd").onclick = function(){
+        addFilter();
+        //console.log(filterList.childElementCount);
+    }
+    
+    //********************REMOVE FILTER*********************************//
+    removeFilter = function(){
+        console.log(filterList.childElementCount);
+    }
+    
+    //*********************CALL removeFilter WHEN MENU ITEM IS CLICKED**************//
+    document.getElementById("filterRemove").onclick = function(){
+        removeFilter();
+    }
 };
 
 
@@ -3034,5 +3482,118 @@ function rgbToHex(r, g, b) {
     return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
 
+//Generate unique colors for colorCoding taken from Al Dass Here: http://stackoverflow.com/questions/6823286/create-unique-colors-using-javascript
+function rgbColors(t) {
+    t = parseInt(t);
+    if (t < 2)
+    throw new Error("'t' must be greater than 1.");
+
+    // distribute the colors evenly on
+    // the hue range (the 'H' in HSV)
+    var i = 360 / (t - 1);
+
+    // hold the generated colors
+    var r = [];
+    var sv = 70;
+    for (var x = 0; x < t; x++) {
+    // alternate the s, v for more
+    // contrast between the colors.
+    sv = sv > 90 ? 70 : sv+10;
+    r.push(hsvToRgb(i * x, sv, sv));
+    }
+    return r;
+};
+    
+    
+//Convert HSV color To RGB taken from Al Dass here: http://stackoverflow.com/questions/6823286/create-unique-colors-using-javascript (ADDED BY DG)
+function hsvToRgb(h, s, v) {
+        var r, g, b;
+        var i;
+        var f, p, q, t;
+
+        // Make sure our arguments stay in-range
+        h = Math.max(0, Math.min(360, h));
+        s = Math.max(0, Math.min(100, s));
+        v = Math.max(0, Math.min(100, v));
+
+        // We accept saturation and value arguments from 0 to 100 because that's
+        // how Photoshop represents those values. Internally, however, the
+        // saturation and value are calculated from a range of 0 to 1. We make
+        // That conversion here.
+        s /= 100;
+        v /= 100;
+
+        if (s == 0) {
+        // Achromatic (grey)
+        r = g = b = v;
+        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+
+        h /= 60; // sector 0 to 5
+        i = Math.floor(h);
+        f = h - i; // factorial part of h
+        p = v * (1 - s);
+        q = v * (1 - s * f);
+        t = v * (1 - s * (1 - f));
+
+        switch (i) {
+        case 0:
+          r = v;
+          g = t;
+          b = p;
+          break;
+
+        case 1:
+          r = q;
+          g = v;
+          b = p;
+          break;
+
+        case 2:
+          r = p;
+          g = v;
+          b = t;
+          break;
+
+        case 3:
+          r = p;
+          g = q;
+          b = v;
+          break;
+
+        case 4:
+          r = t;
+          g = p;
+          b = v;
+          break;
+
+        default: // case 5:
+          r = v;
+          g = p;
+          b = q;
+        }
+
+        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    };
+
+//*****************SHUFFLE AN ARRAY ***********************************//
+function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        // And swap it with the current element.
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+    }
+
+    return array;
+}
 
 

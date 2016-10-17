@@ -48,7 +48,7 @@ $(document).ready(function(){
 //            app.viewsUI();
             app.layersUI();
 //            app.colorCodingUI();
-//            app.searchUI();
+            app.searchUI();
 //            app.timelineUI();
 //            app.downloadUI();
         });
