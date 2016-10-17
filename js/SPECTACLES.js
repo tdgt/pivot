@@ -2994,6 +2994,17 @@ var PIVOT = function(divToBind,callback){
                         li.appendChild(link);
                         sideList.appendChild(li);                
                     }
+                    else{
+                        var attribute = key+":"+data[key];
+                        var li = document.createElement("li");
+                        var link = document.createElement("a");
+                        link.setAttribute("href",data[key]);
+                        link.setAttribute("target","_blank");
+                        var text = document.createTextNode("CLICK HERE FOR DETAIL");
+                        link.appendChild(text);
+                        li.appendChild(link);
+                        sideList.appendChild(li);
+                    }
                 }
             }
         }
