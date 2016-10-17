@@ -44,11 +44,11 @@ $(document).ready(function(){
 //            app.openLocalFiles();
 //            app.sceneUI();
 //            app.lightingUI();
-            app.viewAndSelectionUI();
+            //app.viewAndSelectionUI();
 //            app.viewsUI();
             app.layersUI();
 //            app.colorCodingUI();
-            app.searchUI();
+            //app.searchUI();
 //            app.timelineUI();
 //            app.downloadUI();
         });
