@@ -1,0 +1,17 @@
+.dropdown-toggle-filterName-TDG{
+    width:200px;
+    border-style: solid;
+    border-color: white;
+    border-bottom: none;
+    margin-left: 10px;
+    margin-top:10px;
+}
+
+.dropdown-toggle-filterVal-TDG{
+    width:200px;
+    border-style: solid;
+    border-color: white;
+    border-top: none;
+    margin-left: 10px;
+}
+

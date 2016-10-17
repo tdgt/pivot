@@ -2910,6 +2910,7 @@ var PIVOT = function(divToBind,callback){
             ambient: "rgb(0,255,255)",
             side: 2
         });
+    var scopes = [];
     var filterNames = [];
     var filterVals = [];
     
@@ -2965,7 +2966,6 @@ var PIVOT = function(divToBind,callback){
         }
         
         if(intersects[0] !== undefined){
-            console.log(sideList.children.length);
             if(sideList.children.length === 0){
                 $("#sidebar").offcanvas("toggle");
                 //$("#wrapper").toggleClass("toggled");
@@ -3254,32 +3254,103 @@ var PIVOT = function(divToBind,callback){
     //***************ACTIVATE FILTER BAR WHEN MENU ITEM IS CLICKED****************//
     document.getElementById("PIVOTenableFilters").onclick = function(){
         enableFilters();
+        createScopeList();
     }
     
     //*******************Deactivate FILTER BAR*************************************//
     disableFilters = function(){
         filterBar.offcanvas("hide");
+        rendered();
+        //reset filter lists
+        filterNames = [];
+        filterVals = [];
+        while (filterList.childElementCount>0){
+            filterList.removeChild(filterList.firstChild);
+        }
     }
     //*******************DEACTIVATE FILTERS WHEN MENU ITEM IS CLICKED**************//
     document.getElementById("filterClose").onclick = function(){
         disableFilters();
     }
     
+    //******************CREATE LIST OF PROJECT SCOPES defined by layers (ADDED BY DG)***********//
+    createScopeList = function(){
+        var objs = elements;
+        var scopeList = [];
+        for(i=0;i<objs.length;i++){
+            var obj = objs[i];
+            var objData = obj.userData;
+            var scope = objData.layer;
+            scopeList.push(scope);
+        }
+        var scopeSet = Array.from(new Set(scopeList));
+        scopeSet.unshift('All');
+        var dropdown = document.createElement("li");
+        var name = document.createTextNode("SCOPE");
+        dropdown.setAttribute("class","dropdown");
+        var a = document.createElement("a");
+        a.appendChild(name);
+        a.setAttribute("href","#");
+        a.setAttribute("class","dropdown-toggle-Scope-TDG");
+        a.setAttribute("data-toggle","dropdown");
+        a.setAttribute("role","button");
+        a.setAttribute("aria-expanded","false");
+        a.setAttribute("aria-haspopup","true");
+        var span = document.createElement("span");
+        span.setAttribute("class","caret");
+        a.appendChild(span);
+        dropdown.appendChild(a);
+        var menu = document.createElement("ul");
+        menu.setAttribute("class","dropdown-menu navmenu-nav");
+        menu.setAttribute("aria-expanded","false");
+        menu.setAttribute("aria-haspopup","true");
+        menu.setAttribute("role","menu");
+        for (i=0;i<scopeSet.length;i++){
+            var text = document.createTextNode(scopeSet[i]);
+            var li = document.createElement("li");
+            var link = document.createElement("a");
+            link.setAttribute("href","#");
+            link.appendChild(text);
+            link.onclick = function(){
+                filterVals[0] = this.innerHTML;
+                var filt = "SCOPE: " + this.innerHTML;
+                //filterNames.push(this.innerHTML);
+                var parentDropdown = this.parentElement.parentElement.parentElement;
+                parentDropdown.firstChild.innerHTML = filt;
+                var newSpan = document.createElement("span");
+                newSpan.setAttribute("class","caret");
+                parentDropdown.firstChild.appendChild(newSpan);
+            }
+            li.appendChild(link);
+            menu.appendChild(li);
+            
+        }
+        dropdown.appendChild(menu);
+        filterList.appendChild(dropdown);
+        filterNames[0] = 'layer';
+    };
+    
     //*******************ADD A FILTER TO FILTER BAR*****************************//
     addFilter = function(){
         CreateAttributeList();
         //**CREATING HTML FOR DROPDOWN MENUS**//
         //var DIV = document.createElement("div");
+        var numFilt = (filterList.childElementCount - 1)/2;
+        //console.log(numFilt);
+        
+        //FIRST DROPDOWN
         var dropdown  = document.createElement("li");
         var name = document.createTextNode("Filter");
         dropdown.setAttribute("class","dropdown");
         var a = document.createElement("a");
         a.appendChild(name);
         a.setAttribute("href","#");
-        a.setAttribute("class","dropdown-toggle");
+        a.setAttribute("num",numFilt.toString());
+        a.setAttribute("class","dropdown-toggle-filterName-TDG");
         a.setAttribute("data-toggle","dropdown");
         a.setAttribute("role","button");
         a.setAttribute("aria-expanded","false");
+        a.setAttribute("aria-haspopup","true");
         var span = document.createElement("span");
         span.setAttribute("class","caret");
         a.appendChild(span);
@@ -3287,16 +3358,55 @@ var PIVOT = function(divToBind,callback){
         var menu = document.createElement("ul");
         menu.setAttribute("class","dropdown-menu navmenu-nav");
         menu.setAttribute("role","menu");
+        dropdown.appendChild(menu);
+        filterList.appendChild(dropdown);
+        //SECOND DROPDOWN
+        var filterDrop = document.createElement("li");
+        var filterName = document.createTextNode("Filter Value");
+        filterDrop.setAttribute("class","dropdown");
+        var clicker = document.createElement("a");
+        clicker.appendChild(filterName);
+        clicker.setAttribute("href","#");
+        clicker.setAttribute("class","dropdown-toggle-filterVal-TDG");
+        clicker.setAttribute("data-toggle","dropdown");
+        clicker.setAttribute("role","button");
+        clicker.setAttribute("aria-expanded","false");
+        clicker.setAttribute("aria-haspopup","true");
+        clicker.setAttribute("num",numFilt.toString());
+        var carrot = document.createElement("span");
+        carrot.setAttribute("class","caret");
+        clicker.appendChild(carrot);
+        filterDrop.appendChild(clicker);
+        var filterMenu = document.createElement("ul");
+        filterMenu.setAttribute("class","dropdown-menu navmenu-nav");
+        filterMenu.setAttribute("role","menu");
+        filterMenu.setAttribute("id","filterValue");
+        filterMenu.setAttribute("num",numFilt.toString());
+        filterDrop.appendChild(filterMenu);
+        filterList.appendChild(filterDrop);
         for(i=0;i<attributeSet.length;i++){
             var text = document.createTextNode(attributeSet[i]);
             var li = document.createElement("li");
+            li.setAttribute("num",numFilt.toString());
             var link = document.createElement("a");
+            link.setAttribute("num",numFilt.toString());
             link.setAttribute("href","#");
             link.appendChild(text);
             //UPON CLICKING ATTRIBUTE, GENERATE SECOND DROPDOWN FOR FILTER VALUES
             link.onclick = function(){
+                var testIndex = this.getAttribute("num");
+                for(i=0;i<$("#filters").find('*').length;i++){
+                    var child = $("#filters").find('*')[i];
+                    var childIndex = child.getAttribute("num");
+                    var childId = child.getAttribute("id");
+                    if(childIndex === testIndex && childId === "filterValue"){
+                        var targetIndex = i;
+                        var targetMenu = $("#filters").find('*')[targetIndex];
+                    }
+                }
                 var filt = this.innerHTML;
-                filterNames.push(filt);
+                filterNames[numFilt] = filt;
+                //filterNames.push(filt);
                 var parentDropdown = this.parentElement.parentElement.parentElement;
                 parentDropdown.firstChild.innerHTML = this.innerHTML;
                 var newSpan = document.createElement("span");
@@ -3312,48 +3422,33 @@ var PIVOT = function(divToBind,callback){
                     }
                 }
                 var valSet = Array.from(new Set(valList));
-                //create dropdown for filter values
-                var filterDrop = document.createElement("li");
-                var filterName = document.createTextNode("Filter Value");
-                filterDrop.setAttribute("class","dropdown");
-                var clicker = document.createElement("a");
-                clicker.appendChild(filterName);
-                clicker.setAttribute("href","#");
-                clicker.setAttribute("class","dropdown-toggle");
-                clicker.setAttribute("data-toggle","dropdown");
-                clicker.setAttribute("role","button");
-                clicker.setAttribute("aria-expanded","false");
-                var carrot = document.createElement("span");
-                carrot.setAttribute("class","caret");
-                clicker.appendChild(carrot);
-                filterDrop.appendChild(clicker);
-                var filterMenu = document.createElement("ul");
-                filterMenu.setAttribute("class","dropdown-menu navmenu-nav");
-                filterMenu.setAttribute("role","menu");
+                //add values to filter val dropdown
                 for(j=0;j<valSet.length;j++){
                     var filtText = document.createTextNode(valSet[j]);
                     var item = document.createElement("li");
                     var anchor = document.createElement("a");
                     anchor.setAttribute("href","#");
+                    anchor.setAttribute("num",numFilt.toString());
                     anchor.appendChild(filtText);
                     anchor.onclick = function(){
+                        index = this.getAttribute("num");
                         var filtVal = this.innerHTML;
-                        filterVals.push(filtVal);
+                        filterVals[numFilt] = filtVal;
+                        //filterVals.push(filtVal);
+                        //console.log(filterNames);
+                        //console.log(filterVals);
                         filteredSearch();
                     }
                     item.appendChild(anchor);
-                    filterMenu.appendChild(item);
+                    targetMenu.appendChild(item);
                 }
-                filterDrop.appendChild(filterMenu);
-                filterList.appendChild(filterDrop);
+                
                 //filterList.appendChild(filterDrop);
                 //DIV.appendChild(filterDrop);
             }
             li.appendChild(link);
             menu.appendChild(li);        
         }
-        dropdown.appendChild(menu);
-        filterList.appendChild(dropdown);
         //DIV.appendChild(dropdown);
         //filterList.appendChild(DIV);
     }
@@ -3372,15 +3467,15 @@ var PIVOT = function(divToBind,callback){
             opacity: .5,
         })
         
-        if(SPECT.uiVariables.Scopes === 'All'){
+        if(filterVals[0] === 'All'){
             //console.log(SPECT.filters);
             var newFilters = [];
             var newFilterVals = [];
-            for(i=1;i<SPECT.filters.length;i++){
-                newFilters.push(SPECT.filters[i]);
+            for(i=1;i<filterNames.length;i++){
+                newFilters.push(filterNames[i]);
             }
-            for(i=1;i<SPECT.filterVals.length;i++){
-                newFilterVals.push(SPECT.filterVals[i]);
+            for(i=1;i<filterVals.length;i++){
+                newFilterVals.push(filterVals[i]);
             }
             filterCheck = newFilters;
             filterValCheck = newFilterVals;
@@ -3388,8 +3483,8 @@ var PIVOT = function(divToBind,callback){
             //console.log(newFilterVals);
         }
         else{
-            filterCheck = SPECT.filters;
-            filterValCheck = SPECT.filterVals;
+            filterCheck = filterNames;
+            filterValCheck = filterVals;
         }
         //Account for doubling up on parameters
         var filterSet = Array.from(new Set(filterCheck));
@@ -3406,8 +3501,8 @@ var PIVOT = function(divToBind,callback){
             //console.log(valList);
             filterLists.push(valList);
         }
-        
-        var objs = SPECT.attributes.elementList;
+        //console.log(filterLists);
+        var objs = elements;
         for(i=0;i<objs.length;i++){
             var obj = objs[i];
             var objData = obj.userData;
@@ -3439,18 +3534,19 @@ var PIVOT = function(divToBind,callback){
             }
             if(testList.indexOf(false) !== -1){
                 //Attempting to make non selected elements change material
-                SPECT.attributes.paintElement(obj,hideMat);
+                obj.material = hideMat;
+                //SPECT.attributes.paintElement(obj,hideMat);
                 //obj.visible = false;
             }
             else{
-                SPECT.counter += 1;
-                updateCnsl();
-                SPECT.dataElements.push(obj);
+                //SPECT.counter += 1;
+                //updateCnsl();
+                dataElements.push(obj);
             }
             //console.log(SPECT.guiList[1].Available_Attributes);
-            if(SPECT.uiVariables.Scopes !== 'All'){
+            if(filterVals[0] !== 'All'){
                 var layer = objData.layer;
-                var checkLayer = SPECT.filterVals[0];
+                var checkLayer = filterVals[0];
                 //console.log(checkLayer);
                 if(layer !== checkLayer){
                     //obj.visible = true;
@@ -3467,7 +3563,14 @@ var PIVOT = function(divToBind,callback){
     
     //********************REMOVE FILTER*********************************//
     removeFilter = function(){
-        console.log(filterList.childElementCount);
+        //console.log(filterList.childElementCount);
+        if(filterList.childElementCount>1){
+            filterList.removeChild(filterList.lastChild);
+            filterNames.pop();
+            filterVals.pop();
+            filterList.removeChild(filterList.lastChild);
+            filteredSearch();
+        }
     }
     
     //*********************CALL removeFilter WHEN MENU ITEM IS CLICKED**************//
