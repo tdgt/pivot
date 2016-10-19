@@ -26,12 +26,12 @@
 
 //a global variable to store our running Spectacles App
 //a global variable to store our running Pivot App
+
 var mySpectacles;
 var myPivot
 
 //fires when everything has loaded
 $(document).ready(function(){
-
     //load our sample JSON file from disk
     $.getJSON("./sampleModels/tester.json", function( data ){
 

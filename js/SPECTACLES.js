@@ -214,6 +214,7 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
 
         requestAnimationFrame(SPECT.render); // same here - look into this warning
         SPECT.renderer.render(SPECT.scene, SPECT.orbitControls.object);
+        $("#BLACKOUT").hide(); 
     };
 
     //*********************
@@ -2926,6 +2927,8 @@ var PIVOT = function(divToBind,callback){
     var numMeasurePoints = 0;
     var spriteL = [];
     var geometry = new THREE.Geometry();
+    console.log($("#Spectacles_blackout"));
+    $("#Spectacles_blackout").show();
     
     //***************generate list of all available attributes*********//
     var tempList = [];
@@ -3094,7 +3097,7 @@ var PIVOT = function(divToBind,callback){
                     for (var key in data) {
                         if (data.hasOwnProperty(key)) {
                             //add the key value pair
-                            if (data[key].substr(0, 4) !== 'http') {
+                            if (key !== "LINK") {
                                 var attribute = key+":"+data[key];
                                 var li = document.createElement("li");
                                 var link = document.createElement("a");
