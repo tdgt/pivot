@@ -212,7 +212,7 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
         var delta = SPECT.clock.getDelta();
         SPECT.orbitControls.update(delta); //getting a warning here - look into it
 
-        requestAnimationFrame(SPECT.render); // same here - look into this warning
+        requestAnimationFrame(SPECT.render);// same here - look into this warning
         SPECT.renderer.render(SPECT.scene, SPECT.orbitControls.object);
         $("#BLACKOUT").hide(); 
     };
@@ -2927,8 +2927,6 @@ var PIVOT = function(divToBind,callback){
     var numMeasurePoints = 0;
     var spriteL = [];
     var geometry = new THREE.Geometry();
-    console.log($("#Spectacles_blackout"));
-    $("#Spectacles_blackout").show();
     
     //***************generate list of all available attributes*********//
     var tempList = [];
