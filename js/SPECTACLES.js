@@ -2945,6 +2945,17 @@ var PIVOT = function(divToBind,callback){
     var allAttributes = Array.from(new Set(tempList));
     //console.log(allAttributes);
     
+    //************FOR DEMO PURPOSES ONLY*********************************//
+    for(i=0;i<elements.length;i++){
+        var obj = elements[i];
+        var objData = obj.userData;
+        var objLayer = objData.layer;
+        if (objLayer === "ANNOTATION"){
+            obj.visible = false;
+        }
+                
+    }
+    
     //**********HIGHLIGHTING NEAREST VERTEX WHEN MEASURING***************//
     container.onmousemove = function(e){
         e.preventDefault();
@@ -3219,7 +3230,14 @@ var PIVOT = function(divToBind,callback){
                 var text = document.createTextNode(opt);
 
                 checkbox.type="checkbox";
-                checkbox.checked=LAYERSTART;
+                //hide annotation layer
+                if(opt === "ANNOTATION"){
+                    checkbox.checked = false;
+                }
+                else{
+                    checkbox.checked=LAYERSTART;
+                }
+                console.log(checkbox.checked);
                 checkbox.id=opt
                 checkbox.onclick = function(){
                     //control visibliity of elements
