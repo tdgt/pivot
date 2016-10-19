@@ -23,6 +23,7 @@
 //global variables defined in Spectacles
 var LAYERLIST
 var ELEMENTS
+var SCENE
 var LAYERSTART
 var SELATTRIBUTES
 var CLICKEDELEMENT
@@ -756,9 +757,11 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
                         loadedObj.children[i].geometry.applyMatrix(mat);
 
                         //replace phong material with Lambert.  Phonga don't play so nice with our lighting setup
-                        //var lambert = new THREE.MeshLambertMaterial();
-                        //lambert.map = loadedObj.children[i].material.map;
-                        //loadedObj.children[i].material = lambert;
+//                        var lambert = new THREE.MeshLambertMaterial();
+//                        lambert.map = loadedObj.children[i].material.map;
+//                        console.log(lambert.wireframe);
+//                        lambert.wireframe = true;
+//                        loadedObj.children[i].material = lambert;
 
                         //set up for transparency
                         loadedObj.children[i].material.side = 2;
@@ -2259,126 +2262,128 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
     //Function that checks whether the click should select an element, de-select an element, or do nothing.
     //This is called on a mouse click from the handler function directly above
     SPECT.attributes.checkIfSelected = function (event) {
-        var clicky;
-        //get the canvas where three.js is running - it will be one of the children of our parent div
-        var children = SPECT.viewerDiv.children();
-        var canvas = {};
-        for (var i = 0; i < children.length; i++) {
-            if (children[i].tagName === "CANVAS") {
-                //once we've found the element, wrap it in a jQuery object so we can call .position() and such.
-                canvas = jQuery(children[i]);
-                break;
-            }
-        }
-
-        //get X and Y offset values for our div.  We do this every time in case the viewer is moving around
-        var win = $(window);
-        var offsetX = canvas.offset().left - win.scrollLeft();
-        var offsetY = canvas.offset().top - win.scrollTop();
-
-
-        //get a vector representing the mouse position in 3D
-        //NEW - from here: https://stackoverflow.com/questions/11036106/three-js-projector-and-ray-objects/23492823#23492823
-        var mouse3D = new THREE.Vector3(((event.clientX - offsetX) / canvas.width()) * 2 - 1, -((event.clientY - offsetY) / canvas.height()) * 2 + 1, 0.5);    //OFFSET THE MOUSE CURSOR BY -7PX!!!!
-        mouse3D.unproject(SPECT.camera);
-        mouse3D.sub(SPECT.camera.position);
-        mouse3D.normalize();
-
-        //Get a list of objects that intersect with the selection vector.  We'll take the first one (the closest)
-        //the Spectacles element list is populated in the Spectacles.jsonLoader.processSceneGeometry function
-        //which is called every time a scene is loaded
-        var raycaster = new THREE.Raycaster(SPECT.camera.position, mouse3D);
-        var intersects = raycaster.intersectObjects(SPECT.attributes.elementList);
-
-        //are there any intersections?
-        if (intersects.length > 0) {
-
-            //get the closest intesected object
-            var myIntersect;
-            var i = 0;
-
-            while (i < intersects.length) {
-                myIntersect = intersects[i].object;
-                i++;
-                //get the first object that is visible
-                if (myIntersect.visible == true) break;
+        if(event.button === 0){
+            var clicky;
+            //get the canvas where three.js is running - it will be one of the children of our parent div
+            var children = SPECT.viewerDiv.children();
+            var canvas = {};
+            for (var i = 0; i < children.length; i++) {
+                if (children[i].tagName === "CANVAS") {
+                    //once we've found the element, wrap it in a jQuery object so we can call .position() and such.
+                    canvas = jQuery(children[i]);
+                    break;
+                }
             }
 
-            // was this element hidden by clicking on its layer checkbox?
-            if (myIntersect.visible == true) {
-                //was this element already selected?  if so, do nothing.
-                if (myIntersect.id === SPECT.attributes.previousClickedElement.id) return;
+            //get X and Y offset values for our div.  We do this every time in case the viewer is moving around
+            var win = $(window);
+            var offsetX = canvas.offset().left - win.scrollLeft();
+            var offsetY = canvas.offset().top - win.scrollTop();
 
-                //was another element already selected?
-                if (SPECT.attributes.previousClickedElement.id !== -1) {
-                    //restore previously selected object's state
-                    SPECT.attributes.restorePreviouslySelectedObject();
+
+            //get a vector representing the mouse position in 3D
+            //NEW - from here: https://stackoverflow.com/questions/11036106/three-js-projector-and-ray-objects/23492823#23492823
+            var mouse3D = new THREE.Vector3(((event.clientX - offsetX) / canvas.width()) * 2 - 1, -((event.clientY - offsetY) / canvas.height()) * 2 + 1, 0.5);    //OFFSET THE MOUSE CURSOR BY -7PX!!!!
+            mouse3D.unproject(SPECT.camera);
+            mouse3D.sub(SPECT.camera.position);
+            mouse3D.normalize();
+
+            //Get a list of objects that intersect with the selection vector.  We'll take the first one (the closest)
+            //the Spectacles element list is populated in the Spectacles.jsonLoader.processSceneGeometry function
+            //which is called every time a scene is loaded
+            var raycaster = new THREE.Raycaster(SPECT.camera.position, mouse3D);
+            var intersects = raycaster.intersectObjects(SPECT.attributes.elementList);
+
+            //are there any intersections?
+            if (intersects.length > 0) {
+
+                //get the closest intesected object
+                var myIntersect;
+                var i = 0;
+
+                while (i < intersects.length) {
+                    myIntersect = intersects[i].object;
+                    i++;
+                    //get the first object that is visible
+                    if (myIntersect.visible == true) break;
                 }
 
+                // was this element hidden by clicking on its layer checkbox?
+                if (myIntersect.visible == true) {
+                    //was this element already selected?  if so, do nothing.
+                    if (myIntersect.id === SPECT.attributes.previousClickedElement.id) return;
 
-                //var to track whether the intersect is an object3d or a mesh
-                var isObject3D = false;
-
-                //did we intersect a mesh that belongs to an Object3D or a Geometry?  The former comes from Revit, the latter from GH
-                if (myIntersect.parent.type === "Object3D") {
-                    isObject3D = true;
-                }
+                    //was another element already selected?
+                    if (SPECT.attributes.previousClickedElement.id !== -1) {
+                        //restore previously selected object's state
+                        SPECT.attributes.restorePreviouslySelectedObject();
+                    }
 
 
-                //store the selected object
-                SPECT.attributes.storeSelectedObject(myIntersect, isObject3D);
+                    //var to track whether the intersect is an object3d or a mesh
+                    var isObject3D = false;
 
-                //paint the selected object[s] with the application's 'selected' material
-                if (isObject3D) {
-                    //loop over the children and paint each one
-                    for (var i = 0; i < myIntersect.parent.children.length; i++) {
-                        SPECT.attributes.paintElement(myIntersect.parent.children[i], SPECT.attributes.clickedMaterial);
+                    //did we intersect a mesh that belongs to an Object3D or a Geometry?  The former comes from Revit, the latter from GH
+                    if (myIntersect.parent.type === "Object3D") {
+                        isObject3D = true;
+                    }
+
+
+                    //store the selected object
+                    SPECT.attributes.storeSelectedObject(myIntersect, isObject3D);
+
+                    //paint the selected object[s] with the application's 'selected' material
+                    if (isObject3D) {
+                        //loop over the children and paint each one
+                        for (var i = 0; i < myIntersect.parent.children.length; i++) {
+                            SPECT.attributes.paintElement(myIntersect.parent.children[i], SPECT.attributes.clickedMaterial);
+                        }
+                    }
+
+                    else {
+                        //paint the mesh with the clicked material
+                        SPECT.attributes.paintElement(myIntersect, SPECT.attributes.clickedMaterial);
+                    }
+
+
+                    //populate the attribute list with the object's user data
+                    if (isObject3D) {
+                        SPECT.attributes.populateAttributeList(myIntersect.parent.userData);
+                    }
+                    else {
+                        SPECT.attributes.populateAttributeList(myIntersect.userData);
                     }
                 }
 
                 else {
-                    //paint the mesh with the clicked material
-                    SPECT.attributes.paintElement(myIntersect, SPECT.attributes.clickedMaterial);
-                }
+                    //if an item was already selected
+                    if (SPECT.attributes.previousClickedElement.id !== -1) {
+                        //restore the previously selected object
+                        SPECT.attributes.restorePreviouslySelectedObject();
 
-
-                //populate the attribute list with the object's user data
-                if (isObject3D) {
-                    SPECT.attributes.populateAttributeList(myIntersect.parent.userData);
+                        //hide the attributes
+                        SPECT.attributes.attributeListDiv.hide("slow");
+                    }
                 }
-                else {
-                    SPECT.attributes.populateAttributeList(myIntersect.userData);
-                }
+                clicky = myIntersect;
             }
 
+                //no selection.  Repaint previously selected item if required
             else {
+
                 //if an item was already selected
                 if (SPECT.attributes.previousClickedElement.id !== -1) {
                     //restore the previously selected object
                     SPECT.attributes.restorePreviouslySelectedObject();
+                    clicky = undefined;
+                    //console.log(CLICKEDELEMENT);
 
                     //hide the attributes
-                    SPECT.attributes.attributeListDiv.hide("slow");
+                    //SPECT.attributes.attributeListDiv.hide("slow");
                 }
             }
-            clicky = myIntersect;
+            CLICKEDELEMENT = clicky;
         }
-
-            //no selection.  Repaint previously selected item if required
-        else {
-
-            //if an item was already selected
-            if (SPECT.attributes.previousClickedElement.id !== -1) {
-                //restore the previously selected object
-                SPECT.attributes.restorePreviouslySelectedObject();
-                clicky = undefined;
-                //console.log(CLICKEDELEMENT);
-
-                //hide the attributes
-                //SPECT.attributes.attributeListDiv.hide("slow");
-            }
-        }
-        CLICKEDELEMENT = clicky;
     };
 
     //Function to restore the state of a previously selected object.
@@ -2878,6 +2883,7 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
     }
     //console.log(SPECT.viewerDiv);
     VIEWERDIV = SPECT.viewerDiv;
+    SCENE = SPECT.scene;
 };
 
 
@@ -2887,6 +2893,7 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
 
 var PIVOT = function(divToBind,callback){
     //*******************Pulling in Global Variables and creating local ones//
+    var scene = SCENE;
     var elements = ELEMENTS;
     var allAttributes;
     var orbitControls = ORBITCONTROLS;
@@ -2901,6 +2908,7 @@ var PIVOT = function(divToBind,callback){
     var sideList = document.getElementById("side");
     var filterBar = $("#filterbar").offcanvas({autohide:false, toggle:false});
     var filterList = document.getElementById("filters");
+    var measureButton = document.getElementById("PIVOTmeasure");
     var populated;
     var picked;
     var attributeSet;
@@ -2913,6 +2921,11 @@ var PIVOT = function(divToBind,callback){
     var scopes = [];
     var filterNames = [];
     var filterVals = [];
+    var vertexList = []; 
+    var measuring = false;
+    var numMeasurePoints = 0;
+    var spriteL = [];
+    var geometry = new THREE.Geometry();
     
     //***************generate list of all available attributes*********//
     var tempList = [];
@@ -2932,91 +2945,244 @@ var PIVOT = function(divToBind,callback){
     var allAttributes = Array.from(new Set(tempList));
     //console.log(allAttributes);
     
+    //**********HIGHLIGHTING NEAREST VERTEX WHEN MEASURING***************//
+    container.onmousemove = function(e){
+        e.preventDefault();
+        //console.log(measuring);
+        if(measuring ){
+            for (var i = 0; i < children.length; i++) {
+                    if (children[i].tagName === "CANVAS") {
+                        //once we've found the element, wrap it in a jQuery object so we can call .position() and such.
+                        canvas = jQuery(children[i]);
+                        break;
+                    }
+                }
+            var containerWidth = container.width;
+            var containerHeight = container.height;
+            //window.addEventListener('mousedown', onMouseDown, false);
+
+            var win = $(window);
+            var offsetX = canvas.offset().left - win.scrollLeft();
+            var offsetY = canvas.offset().top - win.scrollTop();
+            //******************Generate Mouse Vector*****************************//
+            var mouse3D = new THREE.Vector3();
+            mouse3D.x = 2*((e.clientX - offsetX)/canvas.width())-1;
+            mouse3D.y = 1-2*((e.clientY - offsetY)/canvas.height());
+            mouse3D.unproject(camera);
+            mouse3D.sub(camera.position);
+            mouse3D.normalize();
+            var raycaster = new THREE.Raycaster(camera.position, mouse3D);
+            var intersects = raycaster.intersectObjects(elements);
+            if(intersects[0]!==undefined){
+                var intObj = intersects[0].object;
+                var vertices = intObj.geometry.vertices;
+                var location = intersects[0].point;
+                var objList = [];
+                for (i=0;i<vertices.length;i++){
+                    var distance = vertices[i].distanceTo(location);
+                    var distObj = { obj: vertices[i], dist: distance};
+                    objList.push(distObj);
+                }
+                var sortObj = sortByKey(objList,"dist");
+                var closeDist = sortObj[0].dist;
+                var closeVertex = sortObj[0].obj;
+                if(closeDist <= 1 && spriteL.length === 0 && numMeasurePoints<2){
+                    var material = new THREE.SpriteMaterial({
+                        color: 0xff0000
+                    });
+                    var pointMat = new THREE.PointsMaterial({
+                        color: 0xff0000
+                    });
+                    sprite = new THREE.Sprite(material);
+                    sprite.name = 'snap';
+                    sprite.scale.set(.25, .25, 1);
+                    sprite.position.copy(closeVertex);
+                    intObj.add(sprite);
+                    spriteL.push(sprite);
+                }
+                else{
+                    //console.log("NOPE");
+                    for(i=0;i<elements.length;i++){
+                        if(elements[i].children.length>0){
+                            for(j=0;j<elements[i].children.length;j++){
+                                if (elements[i].children[j].name !== "KEEPER"){
+                                    elements[i].remove(elements[i].children[j]);
+                                }
+                            }
+                        }
+                    }
+                    spriteL = [];
+                }
+            }
+            else{
+                for(i=0;i<elements.length;i++){
+                        if(elements[i].children.length>0){
+                            for(j=0;j<elements[i].children.length;j++){
+                                if (elements[i].children[j].name !== "KEEPER"){
+                                    elements[i].remove(elements[i].children[j]);
+                                }
+                            }
+                        }
+                    }
+                spriteL = [];
+            }
+        }
+    }
+    
+    
     //***************************object selection**********************//
     
     container.onclick = function(e){
         e.preventDefault();
-        for (var i = 0; i < children.length; i++) {
-            if (children[i].tagName === "CANVAS") {
-                //once we've found the element, wrap it in a jQuery object so we can call .position() and such.
-                canvas = jQuery(children[i]);
-                break;
-            }
-        }
-        var containerWidth = container.width;
-        var containerHeight = container.height;
-        //window.addEventListener('mousedown', onMouseDown, false);
-
-        var win = $(window);
-        var offsetX = canvas.offset().left - win.scrollLeft();
-        var offsetY = canvas.offset().top - win.scrollTop();
-        //******************Generate Mouse Vector*****************************//
-        var mouse3D = new THREE.Vector3();
-        mouse3D.x = 2*((e.clientX - offsetX)/canvas.width())-1;
-        mouse3D.y = 1-2*((e.clientY - offsetY)/canvas.height());
-        mouse3D.unproject(camera);
-        mouse3D.sub(camera.position);
-        mouse3D.normalize();
-        var raycaster = new THREE.Raycaster(camera.position, mouse3D);
-        var intersects = raycaster.intersectObjects(elements);
-        //********************If something was clicked on********************//
-        if(intersects[0] != undefined){
-            picked = intersects[0].object;
-            picked.material = pickedMat;
-        }
-        
-        if(intersects[0] !== undefined){
-            if(sideList.children.length === 0){
-                $("#sidebar").offcanvas("toggle");
-                //$("#wrapper").toggleClass("toggled");
-                //$("#side").css("visibility","hidden");
-                populated = false;
-            }
-            else{
-                populated = true;
-            }
-            //Clear sideBar
-            while(sideList.children.length > 0){
-                sideList.removeChild(sideList.lastChild);
-            }
-            //add attributes to sidebar
-            var originalMat = picked.material;
-            var data = picked.userData;
-            for (var key in data) {
-                if (data.hasOwnProperty(key)) {
-                    //add the key value pair
-                    if (data[key].substr(0, 4) !== 'http') {
-                        var attribute = key+":"+data[key];
-                        var li = document.createElement("li");
-                        var link = document.createElement("a");
-                        var text = document.createTextNode(attribute);
-                        link.appendChild(text);
-                        li.appendChild(link);
-                        sideList.appendChild(li);                
-                    }
-                    else{
-                        var attribute = key+":"+data[key];
-                        var li = document.createElement("li");
-                        var link = document.createElement("a");
-                        link.setAttribute("href",data[key]);
-                        link.setAttribute("target","_blank");
-                        var text = document.createTextNode("CLICK HERE FOR DETAIL");
-                        link.appendChild(text);
-                        li.appendChild(link);
-                        sideList.appendChild(li);
-                    }
+        //console.log(e.button);
+        if(e.button === 0){
+            for (var i = 0; i < children.length; i++) {
+                if (children[i].tagName === "CANVAS") {
+                    //once we've found the element, wrap it in a jQuery object so we can call .position() and such.
+                    canvas = jQuery(children[i]);
+                    break;
                 }
             }
-        }
-        else if(intersects[0] === undefined && sideList.children.length > 0){
-            picked = undefined;
-            while(sideList.children.length > 0){
-                sideList.removeChild(sideList.lastChild);
+            var containerWidth = container.width;
+            var containerHeight = container.height;
+            //window.addEventListener('mousedown', onMouseDown, false);
+
+            var win = $(window);
+            var offsetX = canvas.offset().left - win.scrollLeft();
+            var offsetY = canvas.offset().top - win.scrollTop();
+            //******************Generate Mouse Vector*****************************//
+            var mouse3D = new THREE.Vector3();
+            mouse3D.x = 2*((e.clientX - offsetX)/canvas.width())-1;
+            mouse3D.y = 1-2*((e.clientY - offsetY)/canvas.height());
+            mouse3D.unproject(camera);
+            mouse3D.sub(camera.position);
+            mouse3D.normalize();
+            var raycaster = new THREE.Raycaster(camera.position, mouse3D);
+            var intersects = raycaster.intersectObjects(elements);
+            //********************If something was clicked on********************//
+            if(!measuring){
+                if(intersects[0] !== undefined){
+                    picked = intersects[0].object;
+                    picked.material = pickedMat;
+                    if(sideList.children.length === 0){
+                        $("#sidebar").offcanvas("toggle");
+                        //$("#wrapper").toggleClass("toggled");
+                        //$("#side").css("visibility","hidden");
+                        populated = false;
+                    }
+                    else{
+                        populated = true;
+                    }
+                    //Clear sideBar
+                    while(sideList.children.length > 0){
+                        sideList.removeChild(sideList.lastChild);
+                    }
+                    //add attributes to sidebar
+                    var originalMat = picked.material;
+                    var data = picked.userData;
+                    for (var key in data) {
+                        if (data.hasOwnProperty(key)) {
+                            //add the key value pair
+                            if (data[key].substr(0, 4) !== 'http') {
+                                var attribute = key+":"+data[key];
+                                var li = document.createElement("li");
+                                var link = document.createElement("a");
+                                var text = document.createTextNode(attribute);
+                                link.appendChild(text);
+                                li.appendChild(link);
+                                sideList.appendChild(li);                
+                            }
+                            else{
+                                var attribute = key+":"+data[key];
+                                var li = document.createElement("li");
+                                li.setAttribute("class","a-TDG-Hyperlink");
+                                var link = document.createElement("a");
+                                link.setAttribute("href",data[key]);
+                                link.setAttribute("target","_blank");
+                                var text = document.createTextNode("CLICK HERE FOR DETAIL");
+                                link.appendChild(text);
+                                link.setAttribute("id","LINK");
+                                //link.setAttribute("class","a-TDG-Hyperlink");
+                                link.onclick = function(){
+                                    console.log(this.getAttribute("class"));
+                                }
+                                li.appendChild(link);
+                                sideList.appendChild(li);
+                            }
+                        }
+                    }
+                }
+                else if(intersects[0] === undefined && sideList.children.length > 0){
+                    rendered();
+                    picked = undefined;
+                    while(sideList.children.length > 0){
+                        sideList.removeChild(sideList.lastChild);
+                    }
+                    $("#sidebar").offcanvas("toggle");
+                    //$(.side-toggle).click();
+                    //$("#wrapper").toggleClass("toggled");
+                    //$("#side").css.visibility = "visible"
+                }
             }
-            $("#sidebar").offcanvas("toggle");
-            //$(.side-toggle).click();
-            //$("#wrapper").toggleClass("toggled");
-            //$("#side").css.visibility = "visible"
+            //***************FOR MEASUREMENT PURPOSES*************//
+            else{
+                if(intersects[0]!==undefined){
+                    var intObj = intersects[0].object;
+                    var vertices = intObj.geometry.vertices;
+                    var location = intersects[0].point;
+                    var objList = [];
+                    for (i=0;i<vertices.length;i++){
+                        var distance = vertices[i].distanceTo(location);
+                        var distObj = { obj: vertices[i], dist: distance};
+                        objList.push(distObj);
+                    }
+                    var sortObj = sortByKey(objList,"dist");
+                    var closeDist = sortObj[0].dist;
+                    var closeVertex = sortObj[0].obj;
+                    if(closeDist <= 1){
+                        numMeasurePoints += 1;
+                        if(numMeasurePoints <= 2){
+                            var local = intObj.localToWorld(closeVertex);
+                            vertexList.push(local);
+                            geometry.vertices.push(closeVertex);
+                            var material = new THREE.SpriteMaterial({
+                                color: 0xff0000
+                            });
+                            sprite = new THREE.Sprite(material);
+                            sprite.name = 'KEEPER';
+                            sprite.scale.set(.25, .25, 1.0);
+                            sprite.position.copy(closeVertex);
+                            intObj.add(sprite);
+                        spriteL.push(sprite);
+                        }
+                        if(numMeasurePoints === 2){
+                            var DISTANCE = vertexList[0].distanceTo(vertexList[1]);
+                            var feet = Math.floor(DISTANCE);
+                            var inches = Math.round((DISTANCE-feet)*12);
+                            window.alert("Distance : " + feet.toString()+"'"+inches.toString()+"\"");
+                            for(i=0;i<elements.length;i++){
+                                if(elements[i].children.length>0){
+                                    for(j=0;j<elements[i].children.length;j++){
+                                        elements[i].remove(elements[i].children[j]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if(numMeasurePoints === 2){
+                    console.log(numMeasurePoints);
+                    for(i=0;i<elements.length;i++){
+                        if(elements[i].children.length > 0){
+                            for(j=0;j<elements[i].children.length;j++){
+                                elements[i].remove(elements[i].children[j]);
+                            }
+                        }
+                    }
+                    vertexList = [];
+                    numMeasurePoints = 0;
+                }
+            }
         }
     }
     
@@ -3265,7 +3431,10 @@ var PIVOT = function(divToBind,callback){
     //***************ACTIVATE FILTER BAR WHEN MENU ITEM IS CLICKED****************//
     document.getElementById("PIVOTenableFilters").onclick = function(){
         enableFilters();
-        createScopeList();
+        if(filterList.childElementCount === 0){
+           createScopeList(); 
+        }
+        
     }
     
     //*******************Deactivate FILTER BAR*************************************//
@@ -3331,6 +3500,7 @@ var PIVOT = function(divToBind,callback){
                 var newSpan = document.createElement("span");
                 newSpan.setAttribute("class","caret");
                 parentDropdown.firstChild.appendChild(newSpan);
+                filteredSearch();
             }
             li.appendChild(link);
             menu.appendChild(li);
@@ -3346,7 +3516,7 @@ var PIVOT = function(divToBind,callback){
         CreateAttributeList();
         //**CREATING HTML FOR DROPDOWN MENUS**//
         //var DIV = document.createElement("div");
-        var numFilt = (filterList.childElementCount - 1)/2;
+        var numFilt = ((filterList.childElementCount - 1)/2)+1;
         //console.log(numFilt);
         
         //FIRST DROPDOWN
@@ -3355,6 +3525,7 @@ var PIVOT = function(divToBind,callback){
         dropdown.setAttribute("class","dropdown");
         var a = document.createElement("a");
         a.appendChild(name);
+        a.setAttribute("id","FILTERNAME");
         a.setAttribute("href","#");
         a.setAttribute("num",numFilt.toString());
         a.setAttribute("class","dropdown-toggle-filterName-TDG");
@@ -3367,7 +3538,7 @@ var PIVOT = function(divToBind,callback){
         a.appendChild(span);
         dropdown.appendChild(a);
         var menu = document.createElement("ul");
-        menu.setAttribute("class","dropdown-menu navmenu-nav");
+        menu.setAttribute("class","dropdown-menu-TDG navmenu-nav");
         menu.setAttribute("role","menu");
         dropdown.appendChild(menu);
         filterList.appendChild(dropdown);
@@ -3378,6 +3549,7 @@ var PIVOT = function(divToBind,callback){
         var clicker = document.createElement("a");
         clicker.appendChild(filterName);
         clicker.setAttribute("href","#");
+        clicker.setAttribute("id","FILTERVAL");
         clicker.setAttribute("class","dropdown-toggle-filterVal-TDG");
         clicker.setAttribute("data-toggle","dropdown");
         clicker.setAttribute("role","button");
@@ -3389,7 +3561,7 @@ var PIVOT = function(divToBind,callback){
         clicker.appendChild(carrot);
         filterDrop.appendChild(clicker);
         var filterMenu = document.createElement("ul");
-        filterMenu.setAttribute("class","dropdown-menu navmenu-nav");
+        filterMenu.setAttribute("class","dropdown-menu-TDG navmenu-nav");
         filterMenu.setAttribute("role","menu");
         filterMenu.setAttribute("id","filterValue");
         filterMenu.setAttribute("num",numFilt.toString());
@@ -3414,6 +3586,9 @@ var PIVOT = function(divToBind,callback){
                         var targetIndex = i;
                         var targetMenu = $("#filters").find('*')[targetIndex];
                     }
+                }
+                while(targetMenu.childElementCount>0){
+                    targetMenu.removeChild(targetMenu.lastChild);
                 }
                 var filt = this.innerHTML;
                 filterNames[numFilt] = filt;
@@ -3442,6 +3617,11 @@ var PIVOT = function(divToBind,callback){
                     anchor.setAttribute("num",numFilt.toString());
                     anchor.appendChild(filtText);
                     anchor.onclick = function(){
+                        var parentDrop= this.parentElement.parentElement.parentElement;
+                        parentDrop.firstChild.innerHTML = this.innerHTML;
+                        var spanUpdate = document.createElement("span");
+                        spanUpdate.setAttribute("class","caret");
+                        parentDrop.firstChild.appendChild(spanUpdate);
                         index = this.getAttribute("num");
                         var filtVal = this.innerHTML;
                         filterVals[numFilt] = filtVal;
@@ -3494,6 +3674,7 @@ var PIVOT = function(divToBind,callback){
             //console.log(newFilterVals);
         }
         else{
+            //console.log(filterNames);
             filterCheck = filterNames;
             filterValCheck = filterVals;
         }
@@ -3587,6 +3768,36 @@ var PIVOT = function(divToBind,callback){
     //*********************CALL removeFilter WHEN MENU ITEM IS CLICKED**************//
     document.getElementById("filterRemove").onclick = function(){
         removeFilter();
+    }
+    createSprite = function(position){
+        var material = new THREE.SpriteMaterial({
+        color: 0xffffff
+        });
+        sprite = new THREE.Sprite(material);
+        sprite.name = 'snap';
+        sprite.scale.set(.1, .1, 1.0);
+        sprite.position.copy(position);
+        return sprite;
+    }
+    
+    //********************CLICK POINTS FOR MEASURING*******************************//
+
+
+    //********************ADD VERTICES WHEN MEASURE BUTTON CLICKED*****************//
+    measureButton.onclick = function(){
+        if(measuring){
+            $("#PIVOTmeasure").blur();
+        }
+        measuring = !measuring;
+        if(!measuring){
+            for(i=0;i<elements.length;i++){
+                if(elements[i].children.length > 0){
+                    for(j=0;j<elements[i].children.length;j++){
+                        elements[i].remove(elements[i].children[j]);
+                    }
+                }
+            }
+        }
     }
 };
 
@@ -3708,6 +3919,13 @@ function shuffle(array) {
     }
 
     return array;
+}
+//********************SORT ARRAY OF OBJECTS BY KEY*********************//
+function sortByKey(array, key) {
+    return array.sort(function(a, b) {
+        var x = a[key]; var y = b[key];
+        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+    });
 }
 
 

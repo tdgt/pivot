@@ -1,17 +1,121 @@
-.dropdown-toggle-filterName-TDG{
+#PIVOTmeasure{
+    margin-top:7px;
+    position:absolute;
+}
+
+#PIVOTmeasure:focus{
+    background-color: skyblue;
+}
+
+#FILTERNAME{
     width:200px;
     border-style: solid;
+    border-width: 3px;
     border-color: white;
     border-bottom: none;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
     margin-left: 10px;
     margin-top:10px;
 }
 
-.dropdown-toggle-filterVal-TDG{
+#FILTERVAL{
     width:200px;
     border-style: solid;
+    border-width:3px;
     border-color: white;
     border-top: none;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius:5px;
     margin-left: 10px;
 }
 
+#LINK{
+    color: dodgerblue;
+    text-decoration: underline;
+}
+
+.dropdown-menu-TDG {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  display: none;
+  float: left;
+  min-width: 160px;
+  padding: 5px 0;
+  margin: 2px 0 0;
+  font-size: 14px;
+  text-align: left;
+  list-style: none;
+  background-color: #fff;
+  -webkit-background-clip: padding-box;
+          background-clip: padding-box;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, .15);
+  border-radius: 4px;
+  -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+}
+
+.open > .dropdown-menu-TDG {
+    display:list-item;
+}
+
+
+.dropdown-menu-TDG > li > a {
+    width:200px;
+    display: block;
+    padding: 3px 20px;
+    clear: both;
+    font-weight: normal;
+    line-height: 1.42857143;
+    color: #333;
+    white-space: nowrap;
+}
+
+.open > #FILTERNAME{
+    border-color: skyblue;
+}
+
+.open > #FILTERVAL{
+    border-color: skyblue;
+    border-bottom: none;
+    border-top-style: solid;
+    border-top-color: skyblue;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.navmenu-nav.dropdown-menu-TDG{
+    width:200px;
+    margin-left:10px;
+    margin-top:0;
+    position: absolute;
+    border-style: solid;
+    border-color: skyblue;
+    border-top:none;
+    border-width: 3px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+    -webkit-box-shadow: none;
+            box-shadow: none;
+}
+
+.navmenu-inverse .navmenu-nav.dropdown-menu-TDG,
+.navbar-inverse .navbar-offcanvas .navmenu-nav.dropdown-menu-TDG {
+  background-color: #080808;
+}
+.navmenu-inverse .navmenu-nav.dropdown-menu > .divider,
+.navbar-inverse .navbar-offcanvas .navmenu-nav.dropdown-menu-TDG > .divider {
+  background-color: #222;
+}
+.navmenu-inverse .navmenu-nav.dropdown-menu-TDG > .active > a,
+.navbar-inverse .navbar-offcanvas .navmenu-nav.dropdown-menu-TDG > .active > a,
+.navmenu-inverse .navmenu-nav.dropdown-menu-TDG > .active > a:hover,
+.navbar-inverse .navbar-offcanvas .navmenu-nav.dropdown-menu-TDG > .active > a:hover,
+.navmenu-inverse .navmenu-nav.dropdown-menu-TDG > .active > a:focus,
+.navbar-inverse .navbar-offcanvas .navmenu-nav.dropdown-menu-TDG > .active > a:focus {
+  background-color: red;
+}
