@@ -34,6 +34,8 @@ var VIEWERDIV
 var BOUNDINGSPHERE
 var ORBITCONTROLS
 var ORIGINALMATERIALS
+var RIG
+var LOADER
 
 //base application object containing Spectacles functions and properties
 var SPECTACLES = function (divToBind, jsonFileData, callback) {
@@ -165,7 +167,7 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
         );
         SPECT.renderer.setClearColor(SPECT.backgroundColor, 1.0);
         SPECT.renderer.setSize(viewerDiv.innerWidth(), viewerDiv.innerHeight());
-        SPECT.renderer.shadowMapEnabled = true;
+        SPECT.renderer.shadowMap.enabled = true;
         SPECT.container.append(SPECT.renderer.domElement);
 
         //set up the camera and orbit controls
@@ -1023,7 +1025,7 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
             
             var activeMat = new THREE.MeshLambertMaterial({
                 color: "rgb(0,255,255)",
-                ambient: "rgb(0,255,255)",
+                //ambient: "rgb(0,255,255)",
                 side: 2
             });
             
@@ -1076,7 +1078,7 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
     //Command for closing Timeline
     SPECT.closeTimeline = function(){
         timeGUI.destroy();
-        console.log(timeGUI);
+        //console.log(timeGUI);
         customContainer.removeChild(timeGUI.domElement);
         SPECT.RESET();
         $(".DateConsole").css('visibility','hidden');
@@ -1380,10 +1382,10 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
         var filterValCheck;
         //material for non relevant elements
         var hideMat = new THREE.MeshBasicMaterial({
-            color: "rgb(125,125,125)",
+            color: "rgb(240,240,240)",
             transparent: true,
             side:2,
-            opacity: .5,
+            opacity: .3,
         })
         
         if(SPECT.uiVariables.Scopes === 'All'){
@@ -1912,7 +1914,7 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
     SPECT.lightingRig.shadowsOnOff = function (shad) {
         if (shad) {
             SPECT.lightingRig.sunLight.castShadow = true;
-            SPECT.lightingRig.sunLight.intensity = 1;
+            SPECT.lightingRig.sunLight.intensity = .5;
             SPECT.lightingRig.updateSceneMaterials();
         }
         else {
@@ -2199,7 +2201,7 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
         //a material used to represent a clicked object
         SPECT.attributes.clickedMaterial = new THREE.MeshLambertMaterial({
             color: "rgb(255,255,0)",
-            ambient: "rgb(255,255,0)",
+            //ambient: "rgb(255,255,0)",
             side: 2
         });
 
@@ -2539,7 +2541,7 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
     //function to handle changing the color of a selected element
     SPECT.attributes.setSelectedObjectColor = function (col) {
         SPECT.attributes.clickedMaterial.color = new THREE.Color(col);
-        SPECT.attributes.clickedMaterial.ambient = new THREE.Color(col);
+        //SPECT.attributes.clickedMaterial.ambient = new THREE.Color(col);
     };
 
     //function to purge local variables within this object.  When a user loads a new scene, we have to clear out the old stuff
@@ -2885,6 +2887,8 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
     //console.log(SPECT.viewerDiv);
     VIEWERDIV = SPECT.viewerDiv;
     SCENE = SPECT.scene;
+    RIG = SPECT.lightingRig;
+    LOADER = SPECT.jsonLoader;
 };
 
 
@@ -2912,11 +2916,12 @@ var PIVOT = function(divToBind,callback){
     var measureButton = document.getElementById("PIVOTmeasure");
     var populated;
     var picked;
+    var pickedOriginal;
     var attributeSet;
     var originalMaterials = ORIGINALMATERIALS;
     var pickedMat = new THREE.MeshLambertMaterial({
             color: "rgb(0,255,255)",
-            ambient: "rgb(0,255,255)",
+            //ambient: "rgb(0,255,255)",
             side: 2
         });
     var scopes = [];
@@ -2927,6 +2932,15 @@ var PIVOT = function(divToBind,callback){
     var numMeasurePoints = 0;
     var spriteL = [];
     var geometry = new THREE.Geometry();
+    var dataExport = [];
+    var startDate;
+    var endDate;
+    //var dataElements = [];
+    
+    //var mainSlider = $("#dateSlider").bootstrapSlider({formatter: function(value){return 'Current Value: ' + value;}});
+    //mainSlider.bootstrapSlider("enable");
+    
+    //RIG.shadowsOnOff(true);
     
     //***************generate list of all available attributes*********//
     var tempList = [];
@@ -3074,7 +3088,14 @@ var PIVOT = function(divToBind,callback){
             //********************If something was clicked on********************//
             if(!measuring){
                 if(intersects[0] !== undefined){
+                    //rendered();
+                    if(picked !== undefined){
+                        picked.material = pickedOriginal;
+                        picked = undefined;
+                        pickedOriginal = undefined;
+                    }
                     picked = intersects[0].object;
+                    pickedOriginal = picked.material;
                     picked.material = pickedMat;
                     if(sideList.children.length === 0){
                         $("#sidebar").offcanvas("toggle");
@@ -3125,7 +3146,8 @@ var PIVOT = function(divToBind,callback){
                     }
                 }
                 else if(intersects[0] === undefined && sideList.children.length > 0){
-                    rendered();
+                    //rendered();
+                    picked.material = pickedOriginal;
                     picked = undefined;
                     while(sideList.children.length > 0){
                         sideList.removeChild(sideList.lastChild);
@@ -3671,7 +3693,7 @@ var PIVOT = function(divToBind,callback){
         var filterValCheck;
         //material for non relevant elements
         var hideMat = new THREE.MeshBasicMaterial({
-            color: "rgb(125,125,125)",
+            color: "rgb(240,240,240)",
             transparent: true,
             side:2,
             opacity: .5,
@@ -3752,7 +3774,12 @@ var PIVOT = function(divToBind,callback){
             else{
                 //SPECT.counter += 1;
                 //updateCnsl();
-                dataElements.push(obj);
+                dataExport.push(obj);
+//                var tempMat = obj.material.clone();
+//                tempMat.emissive.r = 0;
+//                tempMat.emissive.g = 0;
+//                tempMat.emissive.b = 10;
+//                obj.material = tempMat;
             }
             //console.log(SPECT.guiList[1].Available_Attributes);
             if(filterVals[0] !== 'All'){
@@ -3799,9 +3826,75 @@ var PIVOT = function(divToBind,callback){
         return sprite;
     }
     
-    //********************CLICK POINTS FOR MEASURING*******************************//
-
-
+    //********************Call Download ALL when menu clicked*******************************//
+    document.getElementById("exportAll").onclick = function(){
+        console.log("YO");
+        downloadExcel(elements);
+    }
+    
+    
+    //**********************Call Download Filter on menuClick***************************//
+    document.getElementById("exportVisible").onclick = function(){
+        downloadExcel(dataExport);
+    }
+    //********************Download Excel************************************************//
+    downloadExcel = function(l){
+        CreateAttributeList();
+        dataExport = [];
+        var dataObjs;
+        if(l.length === 0){
+            dataObjs = elements;
+            console.log("wrong");
+        }
+        else{
+           dataObjs = l; 
+        }
+        
+        var dataList = [];
+        var tempList = [];
+        //add first row of value names
+        for(i=0;i<elements.length;i++){
+            tempList.push(attributeSet[i]);
+        }
+        dataList.push(tempList);
+        //console.log(dataList);
+        //Add all attributes to file
+        var objs = dataObjs;
+        //var objs = SPECT.attributes.elementList;
+        for(i=0;i<objs.length;i++){
+            var obj = objs[i];
+            var objData = obj.userData;
+            var objKeys = Object.keys(objData);
+            var valList = [];
+            for(j=0;j<attributeSet.length;j++){
+                var att = attributeSet[j];
+                //console.log(att);
+                var attribute = objData[attributeSet[j]];
+                if (attribute == undefined){
+                    valList.push('N/A');
+                }
+                else{
+                    valList.push(attribute);
+                }
+            }
+            dataList.push(valList);
+        }
+        var csvRows = [];
+        for(i=0;i<dataList.length;i++){
+            csvRows.push(dataList[i].join(','));
+        }
+        //console.log(csvRows);
+        var csvString = csvRows.join("%0A");
+        //console.log(csvString);
+        
+        var a = document.createElement('a');
+        a.href = 'data:attachment/csv,' + csvString;
+        a.target = '_blank';
+        a.download = 'myFile.csv';
+        
+        document.body.appendChild(a);
+        a.click();
+    }
     //********************ADD VERTICES WHEN MEASURE BUTTON CLICKED*****************//
     measureButton.onclick = function(){
         if(measuring){
@@ -3818,6 +3911,261 @@ var PIVOT = function(divToBind,callback){
             }
         }
     }
+    
+    //*******************GENERATE START DATES FOR TIMELINE*************//
+    var calendars = [];
+    
+    $('.input-daterange input').each(function() {
+        if(calendars.length === 0){
+            calendars.push($(this).datepicker({clearBtn:"true",autoclose:"true"}).on("changeDate",function(e){
+                if(e.date !== undefined){
+                    var month = e.date.getMonth() + 1;
+                    var day = e.date.getDate().toString();
+                    if(day.length === 1){
+                        var realDay = "0"+day;
+                    }
+                    else{
+                        var realDay = day;
+                    }
+                    var year = e.date.getYear() -100 +2000;
+                    var date = year.toString()+"-"+month.toString()+"-"+realDay;
+                    startDate = date;
+                    console.log("start is " + startDate);
+                    generateTimeline();
+                    $("#dateSlider").bootstrapSlider("enable");
+                }
+                else{
+                    startDate = undefined;
+                    generateTimeline();
+                    $("#dateSlider").bootstrapSlider("disable");
+                }
+            }));
+        }
+        else{
+            calendars.push($(this).datepicker({clearBtn:"true",autoclose:"true"}).on("changeDate",function(e){
+                if(e.date !== undefined){
+                    var month = e.date.getMonth() + 1;
+                    var day = e.date.getDate().toString();
+                    if(day.length === 1){
+                        var realDay = "0"+day;
+                    }
+                    else{
+                        var realDay = day;
+                    }
+                    var year = e.date.getYear() -100 +2000;
+                    var date = year.toString()+"-"+month.toString()+"-"+realDay;
+                    endDate = date;
+                    console.log("end is " + endDate);
+                    generateTimeline();
+                    $("#dateSlider").bootstrapSlider("enable");
+                }
+                else{
+                    endDate = undefined;
+                    generateTimeline();
+                    $("#dateSlider").bootstrapSlider("disable");
+                }
+            }));
+        }
+    });
+    
+    //********************GENERATE SLIDER FROM TIMELINE DATES****************//
+
+    generateTimeline = function(){
+        if (startDate != undefined && endDate != undefined){
+            var start = moment(startDate);
+            var end = moment(endDate);
+            var numDays = end.diff(start,"days");
+            var itr = start.twix(end).iterate("days");
+            var dayRange = [];
+            while(itr.hasNext()){
+                dayRange.push(itr.next().toDate());
+            }
+            
+            var objs = elements;
+            for(i=0;i<objs.length;i++){
+                var obj = objs[i];
+                var objData = obj.userData;
+                var objStartDate = objData.START_DATE;
+                //console.log(objDate);
+                if (objStartDate != undefined){
+                    //console.log(objDate);
+                    var actualDate = moment(objStartDate);
+                    
+                    if(actualDate.isSameOrBefore(end)){
+                        obj.visible = true;
+                    }
+                    else{
+                        obj.visible = false;
+                    }
+                }
+            }
+            
+            var activeMat = new THREE.MeshLambertMaterial({
+                color: "rgb(0,255,255)",
+                side: 2
+            });
+            
+            //mainSlider.bootstrapSlider("enable");
+            var sliderHolder = document.getElementById("sliderHolder");
+            if (sliderHolder.childElementCount === 0){
+                var baseSlider = document.createElement("input");
+                baseSlider.setAttribute("id","dateSlider");
+                baseSlider.setAttribute("data-slider-id","slider1");
+                baseSlider.setAttribute("type","text");
+                baseSlider.setAttribute("data-slider-min","0");
+                baseSlider.setAttribute("data-slider-max",numDays.toString());
+                baseSlider.setAttribute("data-slider","1");
+                baseSlider.setAttribute("data-slider-value","0");
+                baseSlider.setAttribute("style","width:500px; padding:20px");
+                sliderHolder.appendChild(baseSlider);
+                $("#dateSlider").bootstrapSlider({tooltip:'always',formatter: function(value){return 'Current Date: ' + dayRange[value].toString();}});
+                $("#dateSlider").on("slide", function(e){
+                    checkTimeline(e,dayRange);
+                });
+            }
+            else{
+                $("#dateSlider").bootstrapSlider('destroy');
+                while(sliderHolder.childElementCount>0){
+                    sliderHolder.removeChild(sliderHolder.lastChild);
+                }
+                var baseSlider = document.createElement("input");
+                baseSlider.setAttribute("id","dateSlider");
+                baseSlider.setAttribute("data-slider-id","slider1");
+                baseSlider.setAttribute("type","text");
+                baseSlider.setAttribute("data-slider-min","0");
+                baseSlider.setAttribute("data-slider-max",numDays.toString());
+                baseSlider.setAttribute("data-slider","1");
+                baseSlider.setAttribute("data-slider-value","0");
+                baseSlider.setAttribute("style","width:500px; padding:20px");
+                sliderHolder.appendChild(baseSlider);
+                $("#dateSlider").bootstrapSlider({tooltip:'always',formatter: function(value){return 'Current Date: ' + dayRange[value].toString();}});
+                $("#dateSlider").on("slide", function(e){
+                    checkTimeline(e,dayRange);
+                });
+            }
+        }
+        else{
+            //mainSlider.bootstrapSlider("disable");
+        }
+    }
+    
+    //***************************Hide Elements based on Timeline***********//
+    checkTimeline = function(v,list){
+        var activeMat = new THREE.MeshLambertMaterial({
+            color: "rgb(0,255,0)",
+            side: 2,
+            transparent: true,
+            opacity:.5
+        });
+        var dayRange = list;
+        var currentDate = dayRange[v.value];
+        var dateString = currentDate.toISOString();
+        var splitDate = dateString.split('T');
+        var currentMoment = moment(splitDate[0]);
+        var objs = elements;
+        for(i=0;i<objs.length;i++){
+            var obj = objs[i];
+            var objData = obj.userData;
+            var objStartDate = objData.START_DATE;
+            var objEndDate = objData.END_DATE;
+            var originalMat = originalMaterials[i];
+            if(objStartDate != undefined){
+                var actualDate = moment(objStartDate);
+                var finishDate = moment(objEndDate);
+                if(actualDate.isSameOrBefore(currentMoment)){
+                    obj.visible = true;
+                }
+                else{
+                    obj.visible = false;
+                }
+                if(actualDate.isSameOrBefore(currentMoment) && finishDate.isAfter(currentMoment)){
+                    obj.material = activeMat;
+                }
+                else{
+                    obj.material = originalMat;
+                }
+            }
+        }
+    }
+    
+    //*************************DISPLAY/HIDE TIMELINE ON CLICK**************//
+    var visibilityStates = [];
+    var materialState = [];
+    document.getElementById("toggleBottom").onclick = function(){
+        if(this.innerHTML === "Show Construction Timeline"){
+            $("#bottomBar").css("visibility","visible");
+            this.innerHTML = "Hide Construction Timeline";
+            var objs = elements;
+            for(i=0;i<objs.length;i++){
+                visibilityStates.push(objs[i].visible);
+                materialState.push(objs[i].material);
+            }
+        }
+        else{
+            $("#bottomBar").css("visibility","hidden"); 
+            this.innerHTML = "Show Construction Timeline";
+            var objs = elements;
+            for(i=0;i<objs.length;i++){
+                objs[i].visible = visibilityStates[i];
+                objs[i].material = materialState[i];
+            }
+        }
+    }
+    
+    //******************OPEN FILE ON CLICK OF  OPEN BUTTON **********//
+    document.getElementById("PIVOTopenLocal").onclick = function(){
+        
+    }
+    //**************OPEN LOCAL FILES***********************//
+    LOADER.openLocalFile = function (event) {
+       
+        //the input object
+        var input = event.target;
+
+        //a new filereader object and onload callback
+        var reader = new FileReader();
+        reader.onload = function () {
+
+            //data variable to populate
+            var data = null;
+
+            try { //get the json data
+                data = $.parseJSON(reader.result);
+            } catch (e) {
+                console.log("something went wrong while trying to parse the json data.");
+                console.log(e);
+                return;
+            }
+
+            try { //load the json data into the scene
+
+                if (data !== null) {
+                    LOADER.loadSceneFromJson(data);
+                    zoomExtents();
+                    //SPECT.views.storeDefaultView();
+                }
+
+
+            } catch (e) {
+                console.log("something went wrong while trying to load the json data.");
+                console.log(e);
+            }
+            //SPECT.UIfolders.Search_Model.removeByProperty('Attribute_To_Search_For');
+            //SPECT.UIfolders.Search_Model.removeByProperty('Available_Attributes');
+//            SPECT.UIfolders.Search_Model.removeByProperty('Scopes');
+//            SPECT.UIfolders.Color_Coding.removeByProperty('Attribute_To_Search_For');
+            createScopeList();
+            CreateAttributeList();
+        };
+
+        //read the file as text - this will fire the onload function above when a user selects a file
+        reader.readAsText(input.files[0]);
+
+        //hide the input form and blackout
+//        $("#OpenLocalFile").css("visibility", "hidden");
+//        $(".Spectacles_loading").show();
+    };
+    
 };
 
 

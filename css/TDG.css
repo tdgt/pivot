@@ -137,3 +137,7 @@
     display: table-cell;
     vertical-align: middle;
 }
+
+#sidebar{
+    z-index: 300;
+}
