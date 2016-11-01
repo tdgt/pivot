@@ -64,21 +64,11 @@ THREE.OrbitControls = function ( object, domElement ) {
 	this.minPolarAngle = 0; // radians
 	this.maxPolarAngle = Math.PI; // radians
 
-	// How far you can orbit horizontally, upper and lower limits.
-	// If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
-	this.minAzimuthAngle = - Infinity; // radians
-	this.maxAzimuthAngle = Infinity; // radians
-
 	// Set to true to disable use of the keys
 	this.noKeys = false;
 
 	// The four arrow keys
 	this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40 };
-
-	// Mouse buttons ****ORIGINAL****
-	//this.mouseButtons = { ORBIT: THREE.MOUSE.LEFT, ZOOM: THREE.MOUSE.MIDDLE, PAN: THREE.MOUSE.RIGHT };
-    // Mouse buttons ****DG EDIT****
-	this.mouseButtons = { ORBIT: THREE.MOUSE.RIGHT, PAN: THREE.MOUSE.MIDDLE };
 
 	////////////
 	// internals
@@ -102,8 +92,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 	var dollyEnd = new THREE.Vector2();
 	var dollyDelta = new THREE.Vector2();
 
-	var theta;
-	var phi;
 	var phiDelta = 0;
 	var thetaDelta = 0;
 	var scale = 1;
@@ -252,13 +240,13 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		// angle from z-axis around y-axis
 
-		theta = Math.atan2( offset.x, offset.z );
+		var theta = Math.atan2( offset.x, offset.z );
 
 		// angle from y-axis
 
-		phi = Math.atan2( Math.sqrt( offset.x * offset.x + offset.z * offset.z ), offset.y );
+		var phi = Math.atan2( Math.sqrt( offset.x * offset.x + offset.z * offset.z ), offset.y );
 
-		if ( this.autoRotate && state === STATE.NONE ) {
+		if ( this.autoRotate ) {
 
 			this.rotateLeft( getAutoRotationAngle() );
 
@@ -266,9 +254,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		theta += thetaDelta;
 		phi += phiDelta;
-
-		// restrict theta to be between desired limits
-		theta = Math.max( this.minAzimuthAngle, Math.min( this.maxAzimuthAngle, theta ) );
 
 		// restrict phi to be between desired limits
 		phi = Math.max( this.minPolarAngle, Math.min( this.maxPolarAngle, phi ) );
@@ -328,18 +313,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	};
 
-	this.getPolarAngle = function () {
-
-		return phi;
-
-	};
-
-	this.getAzimuthalAngle = function () {
-
-		return theta
-
-	};
-
 	function getAutoRotationAngle() {
 
 		return 2 * Math.PI / 60 / 60 * scope.autoRotateSpeed;
@@ -353,25 +326,31 @@ THREE.OrbitControls = function ( object, domElement ) {
 	}
 
 	function onMouseDown( event ) {
+        // alt or command = pan
+        // control or shift = zoom
+        var pan_key = event.shiftKey || event.metaKey;
+        var zoom_key = event.ctrlKey || event.altKey;
+        var no_key = !(pan_key || zoom_key);
+
 
 		if ( scope.enabled === false ) return;
 		event.preventDefault();
 
-		if ( event.button === scope.mouseButtons.ORBIT ) {
+		if ( event.button === 2 && no_key ) {
 			if ( scope.noRotate === true ) return;
 
 			state = STATE.ROTATE;
 
 			rotateStart.set( event.clientX, event.clientY );
 
-		} else if ( event.button === scope.mouseButtons.ZOOM ) {
+		} else if ( event.button === 1 || zoom_key ) {
 			if ( scope.noZoom === true ) return;
 
 			state = STATE.DOLLY;
 
 			dollyStart.set( event.clientX, event.clientY );
 
-		} else if ( event.button === scope.mouseButtons.PAN ) {
+		} else if ( event.button === 2 || pan_key ) {
 			if ( scope.noPan === true ) return;
 
 			state = STATE.PAN;
@@ -380,11 +359,9 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		}
 
-		if ( state !== STATE.NONE ) {
-			document.addEventListener( 'mousemove', onMouseMove, false );
-			document.addEventListener( 'mouseup', onMouseUp, false );
-			scope.dispatchEvent( startEvent );
-		}
+		document.addEventListener( 'mousemove', onMouseMove, false );
+		document.addEventListener( 'mouseup', onMouseUp, false );
+		scope.dispatchEvent( startEvent );
 
 	}
 
@@ -443,7 +420,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		}
 
-		if ( state !== STATE.NONE ) scope.update();
+		scope.update();
 
 	}
 
@@ -460,7 +437,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	function onMouseWheel( event ) {
 
-		if ( scope.enabled === false || scope.noZoom === true || state !== STATE.NONE ) return;
+		if ( scope.enabled === false || scope.noZoom === true ) return;
 
 		event.preventDefault();
 		event.stopPropagation();
@@ -565,7 +542,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		}
 
-		if ( state !== STATE.NONE ) scope.dispatchEvent( startEvent );
+		scope.dispatchEvent( startEvent );
 
 	}
 
