@@ -133,11 +133,21 @@
 }
 
 .blackout > p{
+    color: darkgray;
     font-size: 80px;
     display: table-cell;
     vertical-align: middle;
 }
 
+.blackout > p > a{
+    font-size: 25px;
+    color: darkgray;
+}
+
 #sidebar{
     z-index: 300;
 }
+
+
+
+

@@ -80,55 +80,55 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
     //also creates loading and blackout divs which are shown/hidden as json files are loaded
     SPECT.initViewer = function (viewerDiv) {
 
-        //append the blackout div and let it respond to the parent div resizing
-        SPECT.viewerDiv.append("<div class='Spectacles_blackout'></div>");
-        //function to position and size the blackout div
-        var setBlackout = function () {
-            //set the position of the UI relative to the viewer div
-            var targetDiv = $('.Spectacles_blackout');
-
-            //get upper left coordinates of the viewer div - we'll use these for positioning
-            var win = $(window);
-            var x = SPECT.viewerDiv.offset().left - win.scrollLeft();
-            var y = SPECT.viewerDiv.offset().top - win.scrollTop();
-
-            //set the position and size
-            targetDiv.css('left', x.toString() + "px");
-            targetDiv.css('top', y.toString() + "px");
-            targetDiv.css('width', SPECT.viewerDiv.width().toString() + "px");
-            targetDiv.css('height', SPECT.viewerDiv.height().toString() + "px");
-        };
-        //call this the first time through
-        setBlackout();
-        //respond to resize of the parent div
-        SPECT.viewerDiv.resize(function () {
-            setBlackout();
-        });
+//        append the blackout div and let it respond to the parent div resizing
+//        SPECT.viewerDiv.append("<div class='Spectacles_blackout'></div>");
+//        //function to position and size the blackout div
+//        var setBlackout = function () {
+//            //set the position of the UI relative to the viewer div
+//            var targetDiv = $('.Spectacles_blackout');
+//
+//            //get upper left coordinates of the viewer div - we'll use these for positioning
+//            var win = $(window);
+//            var x = SPECT.viewerDiv.offset().left - win.scrollLeft();
+//            var y = SPECT.viewerDiv.offset().top - win.scrollTop();
+//
+//            //set the position and size
+//            targetDiv.css('left', x.toString() + "px");
+//            targetDiv.css('top', y.toString() + "px");
+//            targetDiv.css('width', SPECT.viewerDiv.width().toString() + "px");
+//            targetDiv.css('height', SPECT.viewerDiv.height().toString() + "px");
+//        };
+//        //call this the first time through
+//        setBlackout();
+//        //respond to resize of the parent div
+//        SPECT.viewerDiv.resize(function () {
+//            setBlackout();
+//        });
 
 
         //append the loading div and let it respond to the parent div resizing
-        SPECT.viewerDiv.append("<div class='Spectacles_loading'><h1>Loading .json file...</h1></div>");
-        //function to position the loading div
-        var setLoading = function () {
-
-            //set the position of the UI relative to the viewer div
-            var targetDiv = $('.Spectacles_loading');
-
-            //get upper left coordinates of the viewer div - we'll use these for positioning
-            var win = $(window);
-            var x = ((SPECT.viewerDiv.offset().left + SPECT.viewerDiv.outerWidth()) - win.scrollLeft()) / 2;
-            var y = ((SPECT.viewerDiv.offset().top + SPECT.viewerDiv.outerHeight()) - win.scrollTop()) / 2;
-
-            //set the position and size
-            targetDiv.css('left', x.toString() + "px");
-            targetDiv.css('top', y.toString() + "px");
-        };
-        //call this the first time through
-        setLoading();
+//        SPECT.viewerDiv.append("<div class='Spectacles_loading'><h1>Loading .json file...</h1></div>");
+//        //function to position the loading div
+//        var setLoading = function () {
+//
+//            //set the position of the UI relative to the viewer div
+//            var targetDiv = $('.Spectacles_loading');
+//
+//            //get upper left coordinates of the viewer div - we'll use these for positioning
+//            var win = $(window);
+//            var x = ((SPECT.viewerDiv.offset().left + SPECT.viewerDiv.outerWidth()) - win.scrollLeft()) / 2;
+//            var y = ((SPECT.viewerDiv.offset().top + SPECT.viewerDiv.outerHeight()) - win.scrollTop()) / 2;
+//
+//            //set the position and size
+//            targetDiv.css('left', x.toString() + "px");
+//            targetDiv.css('top', y.toString() + "px");
+//        };
+//        //call this the first time through
+//        setLoading();
         //respond to resize of the parent div
-        SPECT.viewerDiv.resize(function () {
-            setLoading();
-        });
+//        SPECT.viewerDiv.resize(function () {
+//            //setLoading();
+//        });
 
 
         //append a footer.  Feel free to strip this out if you'd like to! ;]
@@ -168,6 +168,7 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
         SPECT.renderer.setClearColor(SPECT.backgroundColor, 1.0);
         SPECT.renderer.setSize(viewerDiv.innerWidth(), viewerDiv.innerHeight());
         SPECT.renderer.shadowMap.enabled = true;
+        //SPECT.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         SPECT.container.append(SPECT.renderer.domElement);
 
         //set up the camera and orbit controls
@@ -866,7 +867,7 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
             //element to the attributes elements list so selection works.
             if (items[i].hasOwnProperty("geometry")) {
                 //three.js stuff
-                items[i].geometry.mergeVertices();
+                //items[i].geometry.mergeVertices();
                 items[i].geometry.computeFaceNormals();
                 items[i].geometry.computeVertexNormals();
                 items[i].castShadow = true;
@@ -1784,79 +1785,79 @@ var SPECTACLES = function (divToBind, jsonFileData, callback) {
 
         //create a series of pointlights
 
-//        //directly above
-//        var pointA = new THREE.PointLight(0x666666, 1, 0);
-//        pointA.position.set(center.x, center.y + offset, center.z);
-//        pointA.castShadow = false;
-//        SPECT.scene.add(pointA);
-//        SPECT.lightingRig.pointLights.push(pointA);
-//
-//        //directly below
-//        var pointB = new THREE.PointLight(0x666666, 0.66, 0);
-//        pointB.position.set(center.x, center.y - offset, center.z);
-//        pointB.castShadow = false;
-//        SPECT.scene.add(pointB);
-//        SPECT.lightingRig.pointLights.push(pointB);
-//
-//
-//        //4 from the cardinal directions, at roughly 45deg
-//        var pointC = new THREE.PointLight(0x666666, 0.33, 0);
-//        pointC.position.set(center.x + offset, center.y, center.z);
-//        pointC.castShadow = false;
-//        SPECT.scene.add(pointC);
-//        SPECT.lightingRig.pointLights.push(pointC);
-//
-//        var pointD = new THREE.PointLight(0x666666, 0.33, 0);
-//        pointD.position.set(center.x, center.y, center.z + offset);
-//        pointD.castShadow = false;
-//        SPECT.scene.add(pointD);
-//        SPECT.lightingRig.pointLights.push(pointD);
-//
-//        var pointE = new THREE.PointLight(0x666666, 0.33, 0);
-//        pointE.position.set(center.x - offset, center.y, center.z);
-//        pointE.castShadow = false;
-//        SPECT.scene.add(pointE);
-//        SPECT.lightingRig.pointLights.push(pointE);
-//
-//        //var pointF = new THREE.PointLight(0x666666, 0.33, 0);
-//        pointF.position.set(center.x, center.y, center.z - offset);
-//        pointF.castShadow = false;
-//        SPECT.scene.add(pointF);
-//        SPECT.lightingRig.pointLights.push(pointF);
+        //directly above
+        var pointA = new THREE.PointLight(0x666666, 1, 0);
+        pointA.position.set(center.x, center.y + offset, center.z);
+        pointA.castShadow = false;
+        SPECT.scene.add(pointA);
+        SPECT.lightingRig.pointLights.push(pointA);
+
+        //directly below
+        var pointB = new THREE.PointLight(0x666666, 0.66, 0);
+        pointB.position.set(center.x, center.y - offset, center.z);
+        pointB.castShadow = false;
+        SPECT.scene.add(pointB);
+        SPECT.lightingRig.pointLights.push(pointB);
+
+
+        //4 from the cardinal directions, at roughly 45deg
+        var pointC = new THREE.PointLight(0x666666, 0.33, 0);
+        pointC.position.set(center.x + offset, center.y, center.z);
+        pointC.castShadow = false;
+        SPECT.scene.add(pointC);
+        SPECT.lightingRig.pointLights.push(pointC);
+
+        var pointD = new THREE.PointLight(0x666666, 1, 0);
+        pointD.position.set(center.x, center.y, center.z + offset);
+        pointD.castShadow = false;
+        SPECT.scene.add(pointD);
+        SPECT.lightingRig.pointLights.push(pointD);
+
+        var pointE = new THREE.PointLight(0x666666, 0.33, 0);
+        pointE.position.set(center.x - offset, center.y, center.z);
+        pointE.castShadow = false;
+        SPECT.scene.add(pointE);
+        SPECT.lightingRig.pointLights.push(pointE);
+
+        var pointF = new THREE.PointLight(0x666666, 0.33, 0);
+        pointF.position.set(center.x, center.y, center.z - offset);
+        pointF.castShadow = false;
+        SPECT.scene.add(pointF);
+        SPECT.lightingRig.pointLights.push(pointF);
 
 
 
         //directional light - the sun
-//        var light = new THREE.DirectionalLight(0xffffff, .8);
-//        light.position.set(center.x - 40, center.y +20, center.z - 100);
-//        light.target.position.set(center.x, center.y , center.z);
-//        light.castShadow = true;
-//        light.shadowCameraNear = 1;
-//        light.shadowCameraFar = 100;
-//        light.shadowCameraTop = 50;
-//        light.shadowCameraRight = 50;
-//        light.shadowCameraBottom = -50;
-//        light.shadowCameraLeft = -50;
-//        light.distance = 0;
-//        light.intensity = 0;
-//        light.shadowBias = 0.001;
-//        light.shadowMapHeight = SPECT.viewerDiv.innerHeight();
-//        light.shadowMapWidth = SPECT.viewerDiv.innerWidth();
-//        light.shadowDarkness = 0.75;
-//        light.shadowCameraVisible = true;
-     
-        //hemilight 
-        var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.3 );
-        hemiLight.color.setHSL( 225, 231, 242);
-        hemiLight.groundColor.setHSL( 0, 0, 0 );
-        hemiLight.position.set( 0, 500, 0 );
-        SPECT.lightingRig.sunLight = hemiLight;
-        SPECT.scene.add( hemiLight );
-
-        
+        var light = new THREE.DirectionalLight(0xffffff, .8);
+        light.position.set(center.x - 40, center.y +20, center.z - 100);
+        light.target.position.set(center.x, center.y , center.z);
+        light.castShadow = true;
+        //THREE.CameraHelper(light.shadow.camera);
+        light.shadow.camera.near = 1;
+        light.shadow.camera.far = 25;
+        light.shadow.camera.top = 50;
+        light.shadow.camera.right = 50;
+        light.shadow.camera.bottom = -50;
+        light.shadow.camera.left = -50;
+        light.distance = 0;
+        light.intensity = 0;
+        light.shadow.bias = 0.001;
+        light.shadow.mapSize.height = SPECT.viewerDiv.innerHeight();
+        light.shadow.mapSize.width = SPECT.viewerDiv.innerWidth();
+        var helper = new THREE.CameraHelper(light.shadow.camera);
+//     
+//        //hemilight 
+//        var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.3 );
+//        hemiLight.color.setHSL( 225, 231, 242);
+//        hemiLight.groundColor.setHSL( 0, 0, 0 );
+//        hemiLight.position.set( 0, 500, 0 );
+//        SPECT.lightingRig.sunLight = hemiLight;
+//        SPECT.scene.add( hemiLight );
+//
+//        
         //add the light to our scene and to our app object
-//        SPECT.lightingRig.sunLight = light;
-//        SPECT.scene.add(light);
+        SPECT.lightingRig.sunLight = light;
+        SPECT.scene.add(light);
 
         
     };
@@ -2940,7 +2941,10 @@ var PIVOT = function(divToBind,callback){
     //var mainSlider = $("#dateSlider").bootstrapSlider({formatter: function(value){return 'Current Value: ' + value;}});
     //mainSlider.bootstrapSlider("enable");
     
-    //RIG.shadowsOnOff(true);
+    RIG.shadowsOnOff(true);
+//    var sunLight = new THREE.DirectionalLight(0xffffff, .8);
+//    sunLight.castShadow = true;
+//    SCENE.add(sunLight);
     
     //***************generate list of all available attributes*********//
     var tempList = [];
@@ -3260,7 +3264,6 @@ var PIVOT = function(divToBind,callback){
                 else{
                     checkbox.checked=LAYERSTART;
                 }
-                console.log(checkbox.checked);
                 checkbox.id=opt
                 checkbox.onclick = function(){
                     //control visibliity of elements
@@ -4012,6 +4015,7 @@ var PIVOT = function(divToBind,callback){
                 baseSlider.setAttribute("id","dateSlider");
                 baseSlider.setAttribute("data-slider-id","slider1");
                 baseSlider.setAttribute("type","text");
+                baseSlider.setAttribute("data-provide","slider");
                 baseSlider.setAttribute("data-slider-min","0");
                 baseSlider.setAttribute("data-slider-max",numDays.toString());
                 baseSlider.setAttribute("data-slider","1");
@@ -4032,6 +4036,7 @@ var PIVOT = function(divToBind,callback){
                 baseSlider.setAttribute("id","dateSlider");
                 baseSlider.setAttribute("data-slider-id","slider1");
                 baseSlider.setAttribute("type","text");
+                baseSlider.setAttribute("data-provide","slider");
                 baseSlider.setAttribute("data-slider-min","0");
                 baseSlider.setAttribute("data-slider-max",numDays.toString());
                 baseSlider.setAttribute("data-slider","1");
@@ -4296,3 +4301,4 @@ function sortByKey(array, key) {
 }
 
 
+console.log(LAYERLIST);
