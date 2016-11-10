@@ -4122,7 +4122,7 @@ var PIVOT = function(divToBind,callback){
         
     }
     //**************OPEN LOCAL FILES***********************//
-    LOADER.openLocalFile = function (event) {
+    openLocalFile = function (event) {
        
         //the input object
         var input = event.target;
@@ -4145,7 +4145,7 @@ var PIVOT = function(divToBind,callback){
             try { //load the json data into the scene
 
                 if (data !== null) {
-                    LOADER.loadSceneFromJson(data);
+                    loadSceneFromJson(data);
                     zoomExtents();
                     //SPECT.views.storeDefaultView();
                 }
@@ -4169,6 +4169,309 @@ var PIVOT = function(divToBind,callback){
         //hide the input form and blackout
 //        $("#OpenLocalFile").css("visibility", "hidden");
 //        $(".Spectacles_loading").show();
+    };
+    
+    clearFile = function (event) {
+        //the input object
+        var input = event.target;
+        input.value = "";
+
+    };
+
+    //function to open a file from url
+    openUrl = function (url) {
+
+        //hide form, show loading
+        $("#BLACKOUT").show();
+
+        //try to parse the json and load the scene
+        try {
+            $.getJSON(url, function (data) {
+                try {
+                    //call our load scene function
+                    SPECT.jsonLoader.loadSceneFromJson(data);
+                    SPECT.zoomExtents();
+                    SPECT.views.storeDefaultView();
+                } catch (e) {
+                    $("#BLACKOUT").hide();
+                    console.log("Spectacles could not load a scene using the json data from the URL you provided!  Here's the error:");
+                    console.log(e);
+                }
+            })
+                //some ajax errors don't throw.  this catches those errors (i think)
+                .fail(function(){
+                    $("#BLACKOUT").hide();
+                    console.log("Spectacles could not get a json file from the URL you provided - this is probably a security thing on the json file host's end.");
+                });
+        } catch (e) {
+            $("#BLACKOUT").hide();
+            console.log("Spectacles could not get a json file from the URL you provided!  Here's the error:");
+            console.log(e);
+        }
+    };
+
+    //function to hide the 'open file' dialogs.
+    hideOpenDialog = function () {
+        //hide the input form
+        $(".Spectacles_openFile").css("visibility", "hidden");
+    };
+
+    //a function to populate our scene object from a json file
+    loadSceneFromJson = function (jsonToLoad) {
+
+        //show the blackout and loading message
+        $("#BLACKOUT").show();
+
+        //restore the initial state of the top level application objects
+        if (ELEMENTS.length > 0) {
+            SPECT.attributes.purge();
+        }
+        if (RIG.pointLights.length > 0) {
+            RIG.purge();
+        }
+//        if (SPECT.views.viewList.length > 0) {
+//            SPECT.views.purge();
+//        }
+        if (SPECT.layers.layerList.length > 0) {
+            SPECT.layers.purge();
+        }
+        if (SPECT.originalMaterials.length > 0){
+            SPECT.originalMaterials = [];
+        }
+
+        //parse the JSON into a THREE scene
+        var loader = new THREE.ObjectLoader();
+        SPECT.scene = new THREE.Scene();
+        SPECT.scene = loader.parse(jsonToLoad);
+        //push to global variable for pivot
+        SCENE = SPECT.scene;
+        //SPECT.scene.fog = new THREE.FogExp2(0x000000, 0.025);
+
+        //call helper functions
+        SPECT.jsonLoader.makeFaceMaterialsWork();
+        SPECT.jsonLoader.processSceneGeometry();
+        SPECT.jsonLoader.computeBoundingSphere();
+        //SPECT.zoomExtents();
+        //SPECT.views.storeDefaultView();
+
+        //set up the lighting rig
+        SPECT.lightingRig.createLights();//note - i think we should check to see if there is an active lighting UI and use those colors to init lights if so...
+
+        //if those chunks have been enabled by the outside caller, call getViews and getLayers on the scene.
+        if (SPECT.views.viewsEnabled) {
+            //TO DO --- if a view with the same name as the open view exists in the incoming file, set that view
+            SPECT.views.getViews();
+            SPECT.views.CreateViewUI();
+        }
+        if (SPECT.layers.layersEnabled) {
+            SPECT.layers.getLayers();
+            SPECT.layers.CreateLayerUI();
+        }
+
+        //hide the blackout
+        $(".Spectacles_blackout").hide();
+        $(".Spectacles_loading").hide();
+
+    };
+    
+
+
+    //a function to add a textured obj/mtl pair to a scene
+    SPECT.jsonLoader.addObjMtlToScene = function (objPath, mtlPath, zoomExtentsAfterLoad){
+        //hide the blackout
+        $(".Spectacles_blackout").show();
+        $(".Spectacles_loading").show();
+
+        //new objmtl loader object
+        var loader = new THREE.OBJMTLLoader();
+
+        //try to load the pair
+        loader.load(objPath, mtlPath,
+            function(loadedObj){
+
+                //we need to mirror the objects coming in around the X axis and the Z
+                var mat = (new THREE.Matrix4()).identity();
+                mat.elements[0] = -1;
+                mat.elements[10] = -1;
+
+                //process the loaded geometry - make sure faces are 2 sided, merge vertices and compute, etc
+                for(var i=0; i<loadedObj.children.length; i++){
+                    if(loadedObj.children[i] instanceof THREE.Mesh){
+
+                        //apply the matrix to accurately position the mesh
+                        loadedObj.children[i].geometry.applyMatrix(mat);
+
+                        //replace phong material with Lambert.  Phonga don't play so nice with our lighting setup
+//                        var lambert = new THREE.MeshLambertMaterial();
+//                        lambert.map = loadedObj.children[i].material.map;
+//                        console.log(lambert.wireframe);
+//                        lambert.wireframe = true;
+//                        loadedObj.children[i].material = lambert;
+
+                        //set up for transparency
+                        loadedObj.children[i].material.side = 2;
+                        loadedObj.children[i].material.transparent = true;
+                        loadedObj.children[i].material.opacity = 1;
+                    }
+                    if(loadedObj.children[i] instanceof THREE.Object3D){
+                        //loop over the children of the object
+                        for(var j=0; j<loadedObj.children[i].children.length; j++){
+                            //apply the matrix to accurately position the mesh
+                            loadedObj.children[i].children[j].geometry.applyMatrix(mat);
+
+                            //replace phong material with Lambert.  Phonga don't play so nice with our lighting setup
+                            //var lambert = new THREE.MeshLambertMaterial();
+                            //lambert.map = loadedObj.children[i].children[j].material.map;
+                            //loadedObj.children[i].children[j].material = lambert;
+
+                            //set up for transparency
+                            loadedObj.children[i].children[j].material.side = 2;
+                            loadedObj.children[i].children[j].transparent = true;
+                            loadedObj.children[i].children[j].opacity = 1;
+                        }
+                    }
+                }
+
+                //add our loaded object to the scene
+                SPECT.scene.add(loadedObj);
+
+                //update lights
+                SPECT.jsonLoader.computeBoundingSphere();
+                SPECT.lightingRig.updateLights();
+
+                //zoom extents?
+                if(zoomExtentsAfterLoad) { SPECT.zoomExtents(); }
+
+
+                //hide the blackout
+                $(".Spectacles_blackout").hide();
+                $(".Spectacles_loading").hide();
+            },
+
+            // Function called when downloads progress
+            function ( xhr ) {
+                //console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
+            },
+
+            // Function called when downloads error
+            function ( er ) {
+                //console.log( 'An error happened' );
+            }
+        );
+    };
+
+    //call this function to set a geometry's face material index to the same index as the face number
+    //this lets meshfacematerials work - the json loader only gets us part of the way there (I think we are missing something when we create mesh faces...)
+    SPECT.jsonLoader.makeFaceMaterialsWork = function () {
+
+        for (var i = 0, iLen = SPECT.scene.children.length, items; i < iLen; i++) {
+            items = SPECT.scene.children;
+            if (items[i].hasOwnProperty("geometry")) {
+
+                //the object to revise
+                var geo = items[i].geometry;
+                var currentMat = items[i].material;
+                var userData = items[i].userData;
+
+                //if this is a face materials object, make all of the mesh faces point to the correct material
+                if (currentMat.hasOwnProperty("materials") && userData.hasOwnProperty("Spectacles_FaceColorIndexes")) {
+
+                    //get the 'Spectacles_FaceColorIndexes' string out of the mesh's user data object,
+                    //and break it into an array of face material indexes
+                    var faceColors = userData.Spectacles_FaceColorIndexes.split(",");
+
+                    //loop over the faces in the geometry and make the face.materialIndex reference the face's index
+                    for (var j in geo.faces) {
+                        geo.faces[j].materialIndex = faceColors[j];
+                    }
+                    //tell three.js to update the element in the render loop
+                    geo.elementsNeedUpdate = true;
+
+                    //remove the Spectacles_FaceColorIndexes property from the userdata object
+                    delete userData['Spectacles_FaceColorIndexes'];
+                }
+            }
+        }
+    };
+
+    //function that loops over the geometry in the scene and makes sure everything
+    //renders correctly and can be selected
+    SPECT.jsonLoader.processSceneGeometry = function () {
+
+        //get all of the items in the scene
+        items = SPECT.scene.children;
+
+        //loop over all of the elements and process any geometry objects
+        for (var i = 0, iLen = SPECT.scene.children.length, items; i < iLen; i++) {
+
+            //if this is a single mesh (like ones that come from grasshopper), process the geometry and add the
+            //element to the attributes elements list so selection works.
+            if (items[i].hasOwnProperty("geometry")) {
+                //three.js stuff
+                //items[i].geometry.mergeVertices();
+                items[i].geometry.computeFaceNormals();
+                items[i].geometry.computeVertexNormals();
+                items[i].castShadow = true;
+                items[i].receiveShadow = true;
+                //add element to our list of elements that can be selected
+                //items[i].material.transparent = true;
+                //items[i].material.opacity = 1.0;
+                SPECT.attributes.elementList.push(items[i]);
+                SPECT.originalMaterials.push(items[i].material);
+
+
+            }
+                //if this is an object that contains multiple meshes (like the objects that come from Revit), process the
+                //children meshes so they render correctly, and add the child to the attributes.elementList
+            else if (items[i].children.length > 0) {
+                //let the objects cast and receive shadows
+                items[i].castShadow = true;
+                items[i].receiveShadow = true;
+                //the children to loop over
+                var itemsChildren = items[i].children;
+                for (var k = 0, kLen = itemsChildren.length; k < kLen; k++) {
+                    if (itemsChildren[k].hasOwnProperty("geometry")) {
+                        itemsChildren[k].geometry.mergeVertices();
+                        itemsChildren[k].geometry.computeFaceNormals();
+                        itemsChildren[k].geometry.computeVertexNormals();
+                        itemsChildren[k].material.side = 2;
+                        itemsChildren[k].castShadow = true;
+                        itemsChildren[k].receiveShadow = true;
+                        //itemsChildren[k].material.transparent = true;
+                        //itemsChildren[k].material.opacity = 1.0;
+                        SPECT.attributes.elementList.push(itemsChildren[k]);
+
+                    }
+                }
+            }
+        }
+    };
+    
+    //push to global Variable
+    ORIGINALMATERIALS = SPECT.originalMaterials;
+
+    //function to compute the bounding sphere of the model
+    //we use this for the zoomExtents function and in the createLights function below
+    SPECT.jsonLoader.computeBoundingSphere = function () {
+        //loop over the children of the THREE scene, merge them into a mesh,
+        //and compute a bounding sphere for the scene
+        var geo = new THREE.Geometry();
+        SPECT.scene.traverse(function (child) {
+            if (child instanceof THREE.Mesh) {
+                geo.merge(child.geometry);
+            }
+        });
+        geo.computeBoundingSphere();
+
+        //expand the scope of the bounding sphere
+        SPECT.boundingSphere = geo.boundingSphere;
+        BOUNDINGSPHERE = SPECT.boundingSphere;
+
+        //for debugging - show the sphere in the scene
+        //var sphereGeo = new THREE.SphereGeometry(geo.boundingSphere.radius);
+        //var sphereMesh = new THREE.Mesh(sphereGeo, new THREE.MeshLambertMaterial({color: 0xffffff, transparent: true, opacity: 0.25}));
+        //sphereMesh.position.set(geo.boundingSphere.center.x,geo.boundingSphere.center.y,geo.boundingSphere.center.z);
+        //SPECT.scene.add(sphereMesh);
     };
     
 };

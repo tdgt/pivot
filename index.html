@@ -19,8 +19,8 @@
 
     <!-- Application files -->
     <link rel='stylesheet' type='text/css' href='css/SPECTACLES.css'/>
-    <script type="text/javascript" src="js/SPECTACLES.js"></script>
-    <script type="text/javascript" src="js/APP_INIT.js"></script>
+    <script type="text/javascript" src="js/PIVOT.js"></script>
+    <script type="text/javascript" src="js/APP_INIT_PIVOT.js"></script>
     <!--    <script type="text/javascript" src="js/PIVOT.js"></script>-->
     <link rel="stylesheet" media="screen" href="css/bootstrap.css">
     <link rel="stylesheet" media="screen" href="css/custom.css"> 
@@ -39,7 +39,7 @@
     
 
     <nav class="navbar navbar-static-top navbar-inverse">
-        <div class="containter-fluid container" id="PIVOTmenu">
+        <div class="containter-fluid container" id="PIVOTmenu" style = "width:100%;">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
                 data-target="#navbar-collapse-1">
@@ -84,6 +84,8 @@
                       <ul class="dropdown-menu">
                         <li><a href="#" id="PIVOTzoomExtents">Zoom Extents</a></li>
                         <li><a href="#" id = "PIVOTzoomSelected">Zoom Selected</a></li>
+                        <li><a href="#" id = "PIVOThideSelected">Hide Selected</a></li>
+                        <li><a href="#" id = "PIVOTshowHidden">Show Hidden</a></li>
                       </ul>
                     </li>
                     <li class="dropdown">
@@ -117,10 +119,14 @@
                         <a href = "#" id = "toggleBottom">Show Construction Timeline</a>
                     </li>
                     <li>
-                        <button class = "btn btn-default " id="PIVOTmeasure">
-                            Measure
-                        </button>
-
+                        <div class = "btn-group" id = "PIVOTtools">
+                            <button class = "btn btn-default " id="PIVOTmeasure">
+                                Measure
+                            </button>
+                            <button class = "btn btn-default " id="PIVOTassembly">
+                                Assembly Selection
+                            </button>
+                        </div>
                     </li>
                 </ul>
             </div>

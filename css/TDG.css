@@ -1,9 +1,12 @@
-#PIVOTmeasure{
+#PIVOTtools{
     margin-top:7px;
-    position:absolute;
 }
 
 #PIVOTmeasure:focus{
+    background-color: skyblue;
+}
+
+#PIVOTassembly:focus{
     background-color: skyblue;
 }
 
