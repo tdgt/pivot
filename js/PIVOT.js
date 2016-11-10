@@ -3825,6 +3825,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     var startDate;
     var endDate;
     var hideL = [];
+    var hideMats = [];
     
     
     //PIV.layers.CreateLayerUI();
@@ -4336,6 +4337,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
         
         picked.visible=false;
         hideL.push(picked);
+        hideMats.push(pickedOriginal);
     }
     
     //****************CALL HIDE SELECTED WHEN MENU ITEM IS CLICKED*****************************************//
@@ -4346,9 +4348,11 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     //*********************SHOW HIDDEN ITEMS****************************//
     showHidden = function(){
         for(i=0;i<hideL.length;i++){
-            hideL[i].material = pickedOriginal;
+            hideL[i].material = hideMats[i];
             hideL[i].visible = true;
         }
+        hideL = [];
+        hideMats = [];
     }
     
     //********************CALL SHOW HIDDEN WHEN MENU ITEM IS CLICKED***********************//
@@ -4692,7 +4696,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
         var filterValCheck;
         //material for non relevant elements
         var hideMat = new THREE.MeshBasicMaterial({
-            color: "rgb(240,240,240)",
+            color: "rgb(200,200,200)",
             transparent: true,
             side:2,
             opacity: .5,
