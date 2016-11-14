@@ -21,21 +21,21 @@
 //THE SOFTWARE.
 
 //global variables defined in Spectacles
-var LAYERLIST
-var ELEMENTS
-var SCENE
-var LAYERSTART
-var SELATTRIBUTES
-var CLICKEDELEMENT
-var CAMERA
-var PROJECTOR
-var SCENE
-var VIEWERDIV
-var BOUNDINGSPHERE
-var ORBITCONTROLS
-var ORIGINALMATERIALS
-var RIG
-var LOADER
+//var LAYERLIST;
+//var ELEMENTS;
+//var SCENE;
+//var LAYERSTART;
+//var SELATTRIBUTES;
+//var CLICKEDELEMENT;
+//var CAMERA;
+//var PROJECTOR;
+//var SCENE;
+//var VIEWERDIV;
+//var BOUNDINGSPHERE;
+//var ORBITCONTROLS;
+//var ORIGINALMATERIALS;
+//var RIG;
+//var LOADER;
 
 //base application object containing Spectacles functions and properties
 //var SPECTACLES = function (divToBind, jsonFileData, callback) {
@@ -3784,13 +3784,13 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     
     
     //*******************Pulling in Global Variables and creating local ones//
-    var scene = SCENE;
+    var scene = PIV.scene;
     var elements = PIV.attributes.elementList;
     var allAttributes;
-    var orbitControls = ORBITCONTROLS;
+    var orbitControls = PIV.orbitControls;
     var boundingSphere = PIV.boundingSphere;
-    var camera = CAMERA;
-    var projector = PROJECTOR;
+    var camera = PIV.camera;
+    var projector = PIV.attributes.projector;
     //var elements = ELEMENTS;
     var container = document.getElementById('Spectacles_output');
     var children = container.children;
@@ -3826,6 +3826,12 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     var endDate;
     var hideL = [];
     var hideMats = [];
+    var hideMat = new THREE.MeshBasicMaterial({
+            color: "rgb(200,200,200)",
+            transparent: true,
+            side:2,
+            opacity: .5,
+        });
     
     
     //PIV.layers.CreateLayerUI();
@@ -3977,132 +3983,134 @@ var PIVOT = function(divToBind, jsonFileData, callback){
             if(!measuring){
                 //If an object is selected, clear out any previsouly clicked items
                 if(intersects[0] !== undefined){
-                    if(pickedL.length !==0){
-                        for(i=0;i<pickedL.length;i++){
-                            pickedL[i].material = originalPickMats[i];
-                        }
-                        pickedL = [];
-                        originalPickMats = [];
-                    }
-                    if(picked !== undefined){
-                        picked.material = pickedOriginal;
-                        picked = undefined;
-                        pickedOriginal = undefined;
-                    }
-                    //define picked item and store its current material
-                    picked = intersects[0].object;
-                    pickedOriginal = picked.material;
-                    //toggle attributes bar
-                    if(sideList.children.length === 0){
-                        $("#sidebar").offcanvas("toggle");
-                        //$("#wrapper").toggleClass("toggled");
-                        //$("#side").css("visibility","hidden");
-                        populated = false;
-                    }
-                    else{
-                        populated = true;
-                    }
-                    //Clear sideBar
-                    while(sideList.children.length > 0){
-                        sideList.removeChild(sideList.lastChild);
-                    }
-                    //add attributes to sidebar
-                    var originalMat = picked.material;
-                    var data = picked.userData;
-                    var attVals = [];
-                    if(!assemblyMode){
-                        picked.material = pickedMat;
-                        for (var key in data) {
-                            if (data.hasOwnProperty(key)) {
-                                //add the key value pair
-                                if (key !== "LINK") {
-                                    var attribute = key+":"+data[key];
-                                    var li = document.createElement("li");
-                                    var link = document.createElement("a");
-                                    var text = document.createTextNode(attribute);
-                                    link.appendChild(text);
-                                    li.appendChild(link);
-                                    sideList.appendChild(li);                
-                                }
-                                else{
-                                    var attribute = key+":"+data[key];
-                                    var li = document.createElement("li");
-                                    li.setAttribute("class","a-TDG-Hyperlink");
-                                    var link = document.createElement("a");
-                                    link.setAttribute("href",data[key]);
-                                    link.setAttribute("target","_blank");
-                                    var text = document.createTextNode("CLICK HERE FOR DETAIL");
-                                    link.appendChild(text);
-                                    link.setAttribute("id","LINK");
-                                    //link.setAttribute("class","a-TDG-Hyperlink");
-                                    link.onclick = function(){
-                                        console.log(this.getAttribute("class"));
-                                    }
-                                    li.appendChild(link);
-                                    sideList.appendChild(li);
-                                }
-                            }
-                        }
-                    }
-                    //if picking in assembly mode
-                    else{
-                        for(var key in data){
-                            if (data.hasOwnProperty(key)){
-                                attVals.push(data[key]);
-                                if (key !== "LINK") {
-                                    var attribute = key+":"+data[key];
-                                    var li = document.createElement("li");
-                                    var link = document.createElement("a");
-                                    var text = document.createTextNode(attribute);
-                                    link.appendChild(text);
-                                    li.appendChild(link);
-                                    sideList.appendChild(li);                
-                                }
-                                else{
-                                    var attribute = key+":"+data[key];
-                                    var li = document.createElement("li");
-                                    li.setAttribute("class","a-TDG-Hyperlink");
-                                    var link = document.createElement("a");
-                                    link.setAttribute("href",data[key]);
-                                    link.setAttribute("target","_blank");
-                                    var text = document.createTextNode("CLICK HERE FOR DETAIL");
-                                    link.appendChild(text);
-                                    link.setAttribute("id","LINK");
-                                    //link.setAttribute("class","a-TDG-Hyperlink");
-                                    link.onclick = function(){
-                                        console.log(this.getAttribute("class"));
-                                    }
-                                    li.appendChild(link);
-                                    sideList.appendChild(li);
-                                }
-                            }
-                        }
-                        //check if Item is part of assembly and for items within assembly i.e. with identical attributes
-                        if(data.ASSEMBLY){
-                            var objs = elements;
-                            for(i=0;i<objs.length;i++){
-                                var tempL = [];
-                                var obj = objs[i];
-                                var objData = obj.userData;
-                                var objKeys = Object.keys(objData);
-                                for(var key in objData){
-                                    if (objData.hasOwnProperty(key)){
-                                        tempL.push(objData[key]);
-                                    }   
-                                }
-                                if(attVals.toString() === tempL.toString()){
-                                    pickedL.push(obj);
-                                }
-                            }
-                            console.log(pickedL.length);
+                    if(intersects[0].object.material !== hideMat){
+                        if(pickedL.length !==0){
                             for(i=0;i<pickedL.length;i++){
-                                originalPickMats.push(pickedL[i].material);
-                                pickedL[i].material = pickedMat;
+                                pickedL[i].material = originalPickMats[i];
+                            }
+                            pickedL = [];
+                            originalPickMats = [];
+                        }
+                        if(picked !== undefined){
+                            picked.material = pickedOriginal;
+                            picked = undefined;
+                            pickedOriginal = undefined;
+                        }
+                        //define picked item and store its current material
+                        picked = intersects[0].object;
+                        pickedOriginal = picked.material;
+                        //toggle attributes bar
+                        if(sideList.children.length === 0){
+                            $("#sidebar").offcanvas("toggle");
+                            //$("#wrapper").toggleClass("toggled");
+                            //$("#side").css("visibility","hidden");
+                            populated = false;
+                        }
+                        else{
+                            populated = true;
+                        }
+                        //Clear sideBar
+                        while(sideList.children.length > 0){
+                            sideList.removeChild(sideList.lastChild);
+                        }
+                        //add attributes to sidebar
+                        var originalMat = picked.material;
+                        var data = picked.userData;
+                        var attVals = [];
+                        if(!assemblyMode){
+                            picked.material = pickedMat;
+                            for (var key in data) {
+                                if (data.hasOwnProperty(key)) {
+                                    //add the key value pair
+                                    if (key !== "LINK") {
+                                        var attribute = key+":"+data[key];
+                                        var li = document.createElement("li");
+                                        var link = document.createElement("a");
+                                        var text = document.createTextNode(attribute);
+                                        link.appendChild(text);
+                                        li.appendChild(link);
+                                        sideList.appendChild(li);                
+                                    }
+                                    else{
+                                        var attribute = key+":"+data[key];
+                                        var li = document.createElement("li");
+                                        li.setAttribute("class","a-TDG-Hyperlink");
+                                        var link = document.createElement("a");
+                                        link.setAttribute("href",data[key]);
+                                        link.setAttribute("target","_blank");
+                                        var text = document.createTextNode("CLICK HERE FOR DETAIL");
+                                        link.appendChild(text);
+                                        link.setAttribute("id","LINK");
+                                        //link.setAttribute("class","a-TDG-Hyperlink");
+                                        link.onclick = function(){
+                                            console.log(this.getAttribute("class"));
+                                        }
+                                        li.appendChild(link);
+                                        sideList.appendChild(li);
+                                    }
+                                }
                             }
                         }
-                        //If item is not part of an assembly
+                        //if picking in assembly mode
                         else{
-                            picked.material = pickedMat;
+                            for(var key in data){
+                                if (data.hasOwnProperty(key)){
+                                    attVals.push(data[key]);
+                                    if (key !== "LINK") {
+                                        var attribute = key+":"+data[key];
+                                        var li = document.createElement("li");
+                                        var link = document.createElement("a");
+                                        var text = document.createTextNode(attribute);
+                                        link.appendChild(text);
+                                        li.appendChild(link);
+                                        sideList.appendChild(li);                
+                                    }
+                                    else{
+                                        var attribute = key+":"+data[key];
+                                        var li = document.createElement("li");
+                                        li.setAttribute("class","a-TDG-Hyperlink");
+                                        var link = document.createElement("a");
+                                        link.setAttribute("href",data[key]);
+                                        link.setAttribute("target","_blank");
+                                        var text = document.createTextNode("CLICK HERE FOR DETAIL");
+                                        link.appendChild(text);
+                                        link.setAttribute("id","LINK");
+                                        //link.setAttribute("class","a-TDG-Hyperlink");
+                                        link.onclick = function(){
+                                            console.log(this.getAttribute("class"));
+                                        }
+                                        li.appendChild(link);
+                                        sideList.appendChild(li);
+                                    }
+                                }
+                            }
+                            //check if Item is part of assembly and for items within assembly i.e. with identical attributes
+                            if(data.ASSEMBLY){
+                                var objs = elements;
+                                for(i=0;i<objs.length;i++){
+                                    var tempL = [];
+                                    var obj = objs[i];
+                                    var objData = obj.userData;
+                                    var objKeys = Object.keys(objData);
+                                    for(var key in objData){
+                                        if (objData.hasOwnProperty(key)){
+                                            tempL.push(objData[key]);
+                                        }   
+                                    }
+                                    if(attVals.toString() === tempL.toString()){
+                                        pickedL.push(obj);
+                                    }
+                                }
+                                console.log(pickedL.length);
+                                for(i=0;i<pickedL.length;i++){
+                                    originalPickMats.push(pickedL[i].material);
+                                    pickedL[i].material = pickedMat;
+                                }
+                            }
+                            //If item is not part of an assembly
+                            else{
+                                picked.material = pickedMat;
+                            }
                         }
                     }
                 }
@@ -4652,6 +4660,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
                     }
                 }
                 var valSet = Array.from(new Set(valList));
+                valSet.sort();
                 //add values to filter val dropdown
                 for(j=0;j<valSet.length;j++){
                     var filtText = document.createTextNode(valSet[j]);
@@ -4695,12 +4704,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
         var filterCheck;
         var filterValCheck;
         //material for non relevant elements
-        var hideMat = new THREE.MeshBasicMaterial({
-            color: "rgb(200,200,200)",
-            transparent: true,
-            side:2,
-            opacity: .5,
-        })
+        
         
         if(filterVals[0] === 'All'){
             //console.log(SPECT.filters);
@@ -4818,6 +4822,8 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     document.getElementById("filterRemove").onclick = function(){
         removeFilter();
     }
+    
+    //*********************Create a Sprite at a Vertex****************************//
     createSprite = function(position){
         var material = new THREE.SpriteMaterial({
         color: 0xffffff
