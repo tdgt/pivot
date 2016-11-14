@@ -33,7 +33,7 @@ var myPivot;
 //fires when everything has loaded
 $(document).ready(function(){
     //load our sample JSON file from disk
-    $.getJSON("./sampleModels/towerStructure.json", function( data ){
+    $.getJSON("./sampleModels/tester.json", function( data ){
 
         //once loaded, initialize a Spectacles viewer by passing in the div to bind to, the json data, and a callback function
         //where we can enable application functionality in nice clean chunks
@@ -52,7 +52,7 @@ $(document).ready(function(){
 ////            app.timelineUI();
 ////            app.downloadUI();
 //        });
-        myPivot = new PIVOT($("#Spectacles_output"), data, function(app){
+        myPivot = new PIVOT($("#PIVOT_output"), data, function(app){
             app.layersUI();
             //app.viewAndSelectionUI();
             //app.layerList();                  
