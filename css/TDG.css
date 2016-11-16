@@ -152,5 +152,49 @@
 }
 
 
+#PIVOTtoolbar{
+    margin:auto;
+    opacity:.8;
+    width:50%;
+    bottom: 50px;
+    box-shadow: 5px 5px 5px #888888;
+}
 
+#tools>li{
+    float:none; 
+    text-align: center;
+    font-size: 30px;
+    vertical-align:middle;
+}
+
+.fa-layers {
+  transform:rotate(50deg) skewX(24deg) skewY(12deg);  
+  -webkit-transform:rotate(50deg) skewX(24deg) skewY(12deg);  
+  -ms-transform:rotate(50deg) skewX(24deg) skewY(12deg);  
+}
+
+.navbar .divider-vertical {
+    height: floor(@navbar-height - @navbar-margin-bottom);
+    margin: floor(@navbar-margin-bottom / 2) 9px;
+    border-left: 1px solid #f2f2f2;
+    border-right: 1px solid #ffffff;
+}
+
+.modal-content{
+    background-color: #222;
+    opacity:.8;
+    color: #9d9d9d;
+}
+
+.modal .modal-body{
+    max-height: 100%;
+}
+.centeredCheckbox{
+    text-align: center;
+}
+
+.checkbox {
+    position: relative;
+    text-align: center;
+}
 

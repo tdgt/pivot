@@ -3,7 +3,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script type="text/javascript" src="js/libs/three.js"></script>
-    <script type="text/javascript" src="js/libs/jquery-1.9.0.js"></script>
+<!--    <script type="text/javascript" src="js/libs/jquery-1.9.0.js"></script>-->
     <script type="text/javascript" src="js/libs/dat.gui.js"></script>
     <script type="text/javascript" src="js/libs/three.js"></script>
     <script type="text/javascript" src="js/libs/OrbitControls.js"></script>
@@ -12,6 +12,7 @@
     <script type="text/javascript" src="js/libs/jquery-ui.js"></script>
     <script type="text/javascript" src="js/libs/moment.js"></script>
     <script type="text/javascript" src="js/libs/twix.js"></script>
+    
     
     <!-- Latest compiled and minified CSS -->
 <!--    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/css/jasny-bootstrap.min.css">-->
@@ -34,12 +35,26 @@
     <script type="text/javascript" src="js/bootstrap-datepicker.js"></script>
     <link href="css/bootstrap-datepicker.css" rel="stylesheet">
     <link rel="stylesheet" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css"> 
-    
-    
-    
-
+<head>
+    <div class = "modal fade" id = "infoModal" tabindex = "-1" role = "dialog" aria-labelledby = "modalLabel" aria-hidden = "true">
+        <div class = "modal-dialog" role = "document">
+            <div class = "modal-content">
+                <div class = "modal-header">
+                    <button type = "button" class = "close" data-dismiss = "modal" aria-label = "Close">
+                        <span aria-hidden = "true">&times;</span>
+                    </button>
+                    <h4 class = "modal-title" id = "modalLabel">Model Description</h4>
+                </div>
+                <div class = "modal-body">This is a 3D model embedded with fabrication data which can be manipulated through the various tools provided
+                </div>
+                <div class = "modal-footer">
+                    <button type = "button" class = "btn btn-primary" data-dismiss = "modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <nav class="navbar navbar-static-top navbar-inverse">
-        <div class="containter-fluid container" id="PIVOTmenu" style = "width:100%;">
+        <div class="containter-fluid container" id="PIVOTmenu">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
                 data-target="#navbar-collapse-1">
@@ -51,93 +66,91 @@
                 <a class="navbar-brand" href= "#"><B>PIVOT3D</B></a>
             </div>
             <div class="collapse navbar-collapse" id="navbar-collapse-1">
-                <ul class="nav navbar-nav navbar-left">
-                    <li class="dropdown">
-                       <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">File <span class="caret"></span></a>
-                      <ul class="dropdown-menu" role="menu">				          
-                        <li class="dropdown-submenu">
-                            <a  id = "OPENFILE" tabindex="-1" href="#"> <i class="fa fa-folder-open"></i> Open <i class="fa fa-caret-right"></i></a>
-                            <ul class="dropdown-menu">
+                <ul class = "nav navbar-nav navbar-right">
+                    <li>
+                        <a id = "PIVOTmodelName">DOMINO-DETAILED MODEL</a>
+                    </li>
+                    <li>
+                        <a href = "#" id = "PIVOTinfo" data-toggle = "modal" data-target = "#infoModal"><i class = "fa fa-info-circle" style = "font-size:20px;"></i></a>
+                    </li>
+                </ul>
 <!--
-                                <label for = "fileOpen"> 
-                                    Open Local File <i class="fa fa-folder-open"></i>
-                                </label>
--->
-                                <li>
-                                    </i><input id = "fileOpen" type = "file" class = "inputFile"/>
-                                </li>
-                                <li><a tabindex="-1" href="#">Open URL</a></li>
-<!--                              <li><a href="#" id="PIVOTopenLocal">Open Local File</a></li>-->
-                            </ul>
-                        </li>		
-                        <li class="dropdown-submenu">
-                            <a tabindex="-1" href="#"><i class="fa fa-download"></i> Download Data <i class="fa fa-caret-right"></i></a>
-                            <ul class="dropdown-menu">
-                              <li><a id = "exportVisible" tabindex="-1" href="#">Download Visible</a></li>	
-                              <li><a href="#" id = "exportAll">Download All</a></li>
-                            </ul>
-                        </li>
-                      </ul>
-                    </li> 
-                    <li class="dropdown">
-                      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View <span class="caret"></span></a>
-                      <ul class="dropdown-menu">
-                        <li><a href="#" id="PIVOTzoomExtents">Zoom Extents</a></li>
-                        <li><a href="#" id = "PIVOTzoomSelected">Zoom Selected</a></li>
-                        <li><a href="#" id = "PIVOThideSelected">Hide Selected</a></li>
-                        <li><a href="#" id = "PIVOTshowHidden">Show Hidden</a></li>
-                      </ul>
-                    </li>
-                    <li class="dropdown">
-                      <a href="#" id="PIVOTlayers" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Layers <span class="caret"></span></a>
-                        <ul class="dropdown-menu" id="LayersListing">
-                      </ul>
-                    </li>
-                    <li class = "dropdown">
-                        <a href = "#" id = "PIVOTrendering" class="dropdown-toggle" data-toggle="dropdown" role = "button" aria-expanded="false">
-                            Rendering <span class = "caret"></span>
-                        </a>
-                        <ul class = "dropdown-menu" role = "menu">
-                            <li class = "dropdown-submenu">
-                                <a href="#" id = "PIVOTrenderByMaterial">
-                                    Render By Material
-                                </a>
-                            </li>
-                            <li class = "dropdown-submenu">
-                                <a tabindex="-1" href="#" id = "PIVOTcolorByAttribute">Color-Code By Attribute <i class = "fa fa-caret-right"></i></a>
-                                <ul class = "dropdown-menu" id = "PIVOTattributeList">
-                                    <li><a tabindex ="-1">Available Attributes</a></li>
-                                    <li role = "separator" class = "divider"></li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a href="#" id = "PIVOTenableFilters">Filter Model</a>
-                    </li>
-                    <li>
-                        <a href = "#" id = "toggleBottom">Show Construction Timeline</a>
-                    </li>
+                <ul class="nav navbar-nav navbar-left">
                     <li>
                         <div class = "btn-group" id = "PIVOTtools">
-                            <button class = "btn btn-default " id="PIVOTmeasure">
-                                Measure
-                            </button>
-                            <button class = "btn btn-default " id="PIVOTassembly">
-                                Assembly Selection
-                            </button>
-<!--
                             <button class = "btn btn-default " id="PIVOTplane">
                                 Add Clipping Plane
                             </button>
--->
                         </div>
                     </li>
                 </ul>
+-->
             </div>
         </div>
     </nav>
+</head>
     <body>
+        <div class = "modal" id = "attModal" tabindex = "-1" role = "dialog" aria-labelledby = "attModalLabel" aria-hidden = "true" data-backdrop = "false" data-keyboard = "false" style="background-color: transparent;">
+            <div class = "modal-dialog" role = "document">
+                <div id = "attContent" class = "modal-content" style = "display: table;">
+                    <div class = "modal-header">
+                        <button type = "button" class = "close" data-dismiss = "modal" aria-hidden = "true">&times;</button>
+                        <h4 class = "modal-title" id = attModalLabel>Color Code By Attribute</h4>
+                    </div>
+                    <div class = "modal-body">
+                        <table class = "table-sm" data-link = "row">
+                            <thead>
+                                <tr>
+                                    <th>Available Attributes</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table" id = "attTable">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class = "modal-footer">
+                        <button type = "button" class = "btn btn-primary" data-dismiss = "modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script type = "text/javascript">
+            $("#attModal").draggable({
+                handle: ".modal-header"
+            });
+
+        </script>
+        <div class = "modal" id = "layerModal" tabindex = "-1" role = "dialog" aria-labelledby = "layerModalLabel" aria-hidden = "true" data-backdrop = "false" data-keyboard = "false" style="background-color: transparent;">
+            <div class = "modal-dialog" role = "document">
+                <div id = "layerContent" class = "modal-content" style = "display: table;">
+                    <div class = "modal-header">
+                        <button type = "button" class = "close" data-dismiss = "modal" aria-hidden = "true">&times;</button>
+                        <h4 class = "modal-title" id = "layerModalLabel">Layers</h4>
+                    </div>
+                    <div class = "modal-body">
+                        <table class = "table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Layer Name</th>
+                                    <th>Visible</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table" id = "layerTable">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class = "modal-footer">
+                        <button type = "button" class = "btn btn-primary" data-dismiss = "modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script type = "text/javascript">
+            $("#layerModal").draggable({
+                handle: ".modal-header"
+            });
+
+        </script>
         <nav id="sidebar" class="navmenu navmenu-inverse navmenu-fixed-left offcanvas-lg" role="navigation">
             <a class="navmenu-brand">Element Attributes</a>
             <ul id = "side" class="nav navmenu-nav">
@@ -158,7 +171,99 @@
             </ul>
             <a href = "#" id = "filterClose" class ="navmenu-brand">CLOSE [X]</a>
         </nav>
-    
+        
+        <nav id = "PIVOTtoolbar" class = "navbar navbar-inverse  navbar-fixed-bottom">
+            <div class = "container-fluid container">
+                <button type = "button" class = "navbar-toggle collapsed" data-toggle = "collapse" data-target = "#navbar-collapse-3">
+                    <span class = "sr-only">Toggle Navigation</span>
+                    <span class = "icon-bar"></span>
+                    <span class = "icon-bar"></span>
+                    <span class = "icon-bar"></span>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar-collapse-3">
+                <ul id = "tools" class="nav navbar-nav nav-justified">
+                    <li>
+                        <a id = "fileOpen" title = "Open JSON file" href = "#"><i class = "fa fa-folder-open"></i></a>
+                    </li>
+                    <li class = "dropup">
+                        <a href = "#" title = "Download Model Data" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class = "fa fa-download"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li>
+                                <a id = "exportAll" href = "#">Download Data</a>
+                            </li>
+                            <li>
+                                <a id = "exportVisible" href = "#">Download Visible</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class = "dropup">
+                        <a href = "#" title = "View/Selection" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class = "fa fa-search"></i></a>
+                        <ul class = "dropdown-menu" role = "menu">
+                            <li>
+                                <a id = "PIVOTzoomExtents" href = "#">Zoom Extents</a>
+                            </li>
+                            <li>
+                                <a id = "PIVOTzoomSelected" href = "#">Zoom Selected</a>
+                            </li>
+                            <li>
+                                <a id = "PIVOThideSelected" href = "#">Hide Selected</a>
+                            </li>
+                            <li>
+                                <a id = "PIVOTshowHidden" href = "#">Show Hidden</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class = "dropup">
+                        <a id = "PIVOTlayers" title = "Layers" href = "#" class="dropdown-toggle" data-toggle="modal" data-target = "#layerModal" role="button" aria-expanded="false">
+                            <span class = "fa-stack fa-rotate-90" style = "font-size:20px; vertical-align:middle;">
+                                <i class = "fa fa-stop fa-layers fa-stack-1x" style = "left:.30em;opacity:.5;"></i>
+                                <i class = "fa fa-stop fa-layers fa-stack-1x" style = "left:-.15em;color:#fff;opacity:0;"></i>
+                                <i class = "fa fa-stop fa-layers fa-stack-1x" style = "left:0em;opacity:.5;"></i>
+                                <i class = "fa fa-stop fa-layers fa-stack-1x" style = "left:-.15em;color:#fff;opacity:0;"></i>
+                                <i class = "fa fa-stop fa-layers fa-stack-1x" style = "left:-.30em;opacity:.5;"></i>
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu" id="LayersListing">
+                        </ul>
+                    </li>
+                    <li class = "dropup">
+                        <a id = "PIVOTrendering" title = "Rendering Options" href = "#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class = "fa fa-cube"></i></a>
+                        <ul class = "dropdown-menu" role = "menu">
+                            <li>
+                                <a tabindex="-1" href="#" id = "PIVOTcolorByAttribute" data-toggle = "modal" data-target = "#attModal">Color-Code By Attribute</a> 
+                            </li>
+                            <li>
+                                <a href="#" id = "PIVOTrenderByMaterial">
+                                    Render By Material
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#" title = "Enable Model Filtering" id = "PIVOTenableFilters"><i class = "fa fa-filter"></i></a>
+                    </li> 
+                    <li>
+                        <a href = "#" title = "Enable/Disable construction timeline" id = "toggleBottom"><i class = "fa fa-clock-o"></i></a>
+                    </li>
+                    <li>
+                        <a href = "#" title = "Enable/Disable Measuring Mode" id = "PIVOTmeasure"><i class = "fa fa-thermometer-4"></i></a>
+                    </li>
+                    <li>
+                        <a href = "#" title = "Enable/Disable Assembly Selection" id = "PIVOTassembly"><i class = "fa fa-cubes"></i></a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+            <div class = "container-fluid container">
+                <button type = "button" class = "navbar-toggle collapsed" data-toggle = "collapse" data-target = "#navbar-collapse-">
+                    <span class = "sr-only">Toggle Navigation</span>
+                    <span class = "icon-bar"></span>
+                    <span class = "icon-bar"></span>
+                    <span class = "icon-bar"></span>
+                </button>
+            </div>
+        
         <nav class="navbar navbar-inverse navbar-fixed-bottom" id = "bottomBar" style = "visibility:hidden">
             <div class="container-fluid container" id="TIMEmenu">
                 <div class="navbar-header">
@@ -188,20 +293,27 @@
                 </div>
             </div>
         </nav>
-        <div id="Spectacles_output" style = "position:fixed; top:0;left:0;width:100%;height:100%;z-index:-1"></div>
+        <div id="PIVOT_output" style = "position:fixed; top:0;left:0;width:100%;height:100%;z-index:-1"></div>
         <div class = "blackout" id = "BLACKOUT">
             <p align = "center">LOADING 
                 <a><i class = "fa fa-cog fa-spin fa-3x fa-fw"></i></a>
             </p>
+        </div>
+        <div id = "PIVOTopenLocal">
+            <h1>Open a .json file</h1>
+            <div>
+                <h3>Open Local File</h3>
+                <input id = "PIVOTopenButton" type = "file" onclick = "myPivot.jsonLoader.clearFile(event)" onchange = "myPivot.jsonLoader.openLocalFile(event)">
+            </div>
         </div>
         
     </body>
   
     <script type="application/javascript">
         window.addEventListener('resize', function(){
-            $("#Spectacles_output").css("height",window.innerHeight.toString());
-            $("#Spectacles_output").css("width",window.innerWidth.toString());
-            $("#Spectacles_output").resize();
+            $("#PIVOT_output").css("height",window.innerHeight.toString());
+            $("#PIVOT_output").css("width",window.innerWidth.toString());
+            $("#PIVOT_output").resize();
         });
     </script>
     
