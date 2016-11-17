@@ -180,15 +180,37 @@
     border-right: 1px solid #ffffff;
 }
 
+.modal{
+    
+}
+
 .modal-content{
     background-color: #222;
     opacity:.8;
     color: #9d9d9d;
 }
 
-.modal .modal-body{
-    max-height: 100%;
+.modal-open .modal{
+    overflow: hidden;
+    top: 25%;
 }
+
+#openModal{
+    top:0;
+}
+
+#openModal .modal-content{
+    width:inherit;
+    height:inherit;
+    background-color: #222;
+    opacity:.8;
+    color: #9d9d9d;
+    /* To center horizontally */
+    margin: 0 auto;
+    pointer-events: all;
+}
+
+
 .centeredCheckbox{
     text-align: center;
 }
@@ -198,3 +220,15 @@
     text-align: center;
 }
 
+.vertical-alignment-helper {
+    display:table;
+    height: 100%;
+    width: 100%;
+    pointer-events:none;
+}
+.vertical-align-center {
+    /* To center vertically */
+    display: table-cell;
+    vertical-align: middle;
+    pointer-events:none;
+}

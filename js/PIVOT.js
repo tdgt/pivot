@@ -63,7 +63,6 @@ var PIVOT = function(divToBind, jsonFileData, callback){
 
         //the three projector object used for turning a mouse click into a selection
         PIV.attributes.projector = new THREE.Projector();
-        //send to global variable for pivot
     };
     
     
@@ -132,14 +131,25 @@ var PIVOT = function(divToBind, jsonFileData, callback){
 
         requestAnimationFrame(PIV.render);// same here - look into this warning
         PIV.renderer.render(PIV.scene, PIV.orbitControls.object);
-        $("#BLACKOUT").hide(); 
+        //$("#BLACKOUT").hide(); 
     };
     
-    PIV.attributes.init();
+    PIV.initiateAttributes = function(){
+        PIV.attributes.init();
+    }
+    
+    PIV.showBlackout = function(){
+        console.log("shown");
+        $("#BLACKOUT").css("visibility","visible");
+    }
+    
+    PIV.hideBlackout = function(){
+        $("#BLACKOUT").css("visibility","hidden");
+        console.log("hidden");
+    }
     
     //*************************FUNCTIONS FOR OPENING JSON FILE********************//
     PIV.jsonLoader.openLocalFile = function (event) {
-       $("BLACKOUT").show();
         //the input object
         var input = event.target;
 
@@ -163,7 +173,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
                 if (data !== null) {
                     PIV.jsonLoader.loadSceneFromJson(data);
                     zoomExtents();
-                    //SPECT.views.storeDefaultView();
+                    PIV.views.storeDefaultView();
                 }
 
 
@@ -171,10 +181,6 @@ var PIVOT = function(divToBind, jsonFileData, callback){
                 console.log("something went wrong while trying to load the json data.");
                 console.log(e);
             }
-            //SPECT.UIfolders.Search_Model.removeByProperty('Attribute_To_Search_For');
-            //SPECT.UIfolders.Search_Model.removeByProperty('Available_Attributes');
-//            SPECT.UIfolders.Search_Model.removeByProperty('Scopes');
-//            SPECT.UIfolders.Color_Coding.removeByProperty('Attribute_To_Search_For');
             createScopeList();
             CreateAttributeList();
         };
@@ -185,7 +191,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
         //hide the input form and blackout
 //        $("#OpenLocalFile").css("visibility", "hidden");
 //        $(".Spectacles_loading").show();
-        $("BLAKOUT").hide();
+        //PIV.hideBlackout();
     };
     
     PIV.jsonLoader.clearFile = function (event) {
@@ -199,7 +205,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     PIV.jsonLoader.openUrl = function (url) {
 
         //hide form, show loading
-        $("#BLACKOUT").show();
+        $("#BLACKOUT").css("visibility","visible");
 
         //try to parse the json and load the scene
         try {
@@ -210,21 +216,22 @@ var PIVOT = function(divToBind, jsonFileData, callback){
                     zoomExtents();
                     PIV.views.storeDefaultView();
                 } catch (e) {
-                    $("#BLACKOUT").hide();
+                    $("#BLACKOUT").css("visibility","hidden");
                     console.log("Spectacles could not load a scene using the json data from the URL you provided!  Here's the error:");
                     console.log(e);
                 }
             })
                 //some ajax errors don't throw.  this catches those errors (i think)
                 .fail(function(){
-                    $("#BLACKOUT").hide();
+                    $("#BLACKOUT").css("visibility","hidden");
                     console.log("Spectacles could not get a json file from the URL you provided - this is probably a security thing on the json file host's end.");
                 });
         } catch (e) {
-            $("#BLACKOUT").hide();
+            $("#BLACKOUT").css("visibility","hidden");
             console.log("Spectacles could not get a json file from the URL you provided!  Here's the error:");
             console.log(e);
         }
+        $("#BLACKOUT").css("visibility","hidden");
     };
 
     //function to hide the 'open file' dialogs.
@@ -236,7 +243,8 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     //a function to populate our scene object from a json file
     PIV.jsonLoader.loadSceneFromJson = function (jsonToLoad) {
         //show the blackout and loading message
-        $("#BLACKOUT").show();
+        //$(".BLACKOUT").show();
+        //console.log("shown");
 
         //restore the initial state of the top level application objects
         if (PIV.attributes.elementList.length > 0) {
@@ -245,9 +253,9 @@ var PIVOT = function(divToBind, jsonFileData, callback){
         if (PIV.lightingRig.pointLights.length > 0) {
             PIV.lightingRig.purge();
         }
-//        if (SPECT.views.viewList.length > 0) {
-//            SPECT.views.purge();
-//        }
+        if (PIV.views.viewList.length > 0) {
+            PIV.views.purge();
+        }
         if (PIV.layers.layerList.length > 0) {
             PIV.layers.purge();
         }
@@ -267,8 +275,8 @@ var PIVOT = function(divToBind, jsonFileData, callback){
         PIV.jsonLoader.makeFaceMaterialsWork();
         PIV.jsonLoader.processSceneGeometry();
         PIV.jsonLoader.computeBoundingSphere();
-        //SPECT.zoomExtents();
-        //SPECT.views.storeDefaultView();
+        zoomExtents();
+        PIV.views.storeDefaultView();
 
         //set up the lighting rig
         PIV.lightingRig.createLights();//note - i think we should check to see if there is an active lighting UI and use those colors to init lights if so...
@@ -285,8 +293,9 @@ var PIVOT = function(divToBind, jsonFileData, callback){
         }
 
         //hide the blackout
-        $(".Spectacles_blackout").hide();
-        $(".Spectacles_loading").hide();
+        //$(".BLACKOUT").css("visibility","hidden");
+        PIV.hideBlackout();
+        //console.log(PIV.attributes.elementList.length);
 
     };
     
@@ -360,7 +369,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
 
 
                 //hide the blackout
-                $("#BLACKOUT").hide();
+                $("#BLACKOUT").css("visibility","hidden");
             },
 
             // Function called when downloads progress
@@ -462,8 +471,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
         }
     };
     
-    //push to global Variable
-    //ORIGINALMATERIALS = SPECT.originalMaterials;
+
 
     //function to compute the bounding sphere of the model
     //we use this for the zoomExtents function and in the createLights function below
@@ -480,7 +488,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
 
         //expand the scope of the bounding sphere
         PIV.boundingSphere = geo.boundingSphere;
-        //BOUNDINGSPHERE = SPECT.boundingSphere;
+
 
         //for debugging - show the sphere in the scene
         //var sphereGeo = new THREE.SphereGeometry(geo.boundingSphere.radius);
@@ -621,7 +629,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     //this is a handler for a UI variable
     PIV.lightingRig.setPointLightsColor = function (col) {
 
-        for (var i in SPECT.lightingRig.pointLights) {
+        for (var i in PIV.lightingRig.pointLights) {
 
             PIV.lightingRig.pointLights[i].color = new THREE.Color(col);
         }
@@ -633,7 +641,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
         //console.log(col);
 
         //remove the old ambient light
-        PIV.scene.remove(SPECT.lightingRig.ambientLight);
+        PIV.scene.remove(PIV.lightingRig.ambientLight);
 
         //replace the ambient light with a new one, and add it to the scene
         PIV.lightingRig.ambientLight = new THREE.AmbientLight(new THREE.Color(col));
@@ -741,7 +749,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
                         revitView.target.X = parseFloat(v[k + 4]);
                         revitView.target.Y = parseFloat(v[k + 5]);
                         revitView.target.Z = parseFloat(v[k + 6]);
-                        SPECT.views.viewList.push(revitView);
+                        PIV.views.viewList.push(revitView);
                     }
                 }
 
@@ -847,12 +855,12 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     PIV.views.storeDefaultView = function () {
         PIV.views.defaultView.eye = {};
         PIV.views.defaultView.target = {};
-        PIV.views.defaultView.eye.X = SPECT.orbitControls.object.position.x;
-        PIV.views.defaultView.eye.Y = SPECT.orbitControls.object.position.y;
-        PIV.views.defaultView.eye.Z = SPECT.orbitControls.object.position.z;
-        PIV.views.defaultView.target.X = SPECT.orbitControls.target.x;
-        PIV.views.defaultView.target.Y = SPECT.orbitControls.target.y;
-        PIV.views.defaultView.target.Z = SPECT.orbitControls.target.z;
+        PIV.views.defaultView.eye.X = PIV.orbitControls.object.position.x;
+        PIV.views.defaultView.eye.Y = PIV.orbitControls.object.position.y;
+        PIV.views.defaultView.eye.Z = PIV.orbitControls.object.position.z;
+        PIV.views.defaultView.target.X = PIV.orbitControls.target.x;
+        PIV.views.defaultView.target.Y = PIV.orbitControls.target.y;
+        PIV.views.defaultView.target.Z = PIV.orbitControls.target.z;
 
     };
     
@@ -927,21 +935,11 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     PIV.layers.purge = function () {
         //reset our list
         if (this.layerList.length > 0) this.layerList = [];
-
-        //purge layer folder
-        try {
-            var layerFolder = SPECT.datGui.__folders.Layers;
-            var layerCount = layerFolder.__controllers.length;
-            for (var i = 0; i < layerCount; i++) {
-                layerFolder.__controllers[0].remove();
-            }
-
-            //remove the Layers folder -- this is not working
-            SPECT.datGui.removeFolder('Layers');
-
+        var layerTable = document.getElementById("layerTable");
+        while(layerTable.childElementCount>0){
+            layerTable.removeChild(layerTable.lastChild);
         }
 
-        catch (err) { }
     };
     
     PIV.layersUI = function () {
@@ -1023,8 +1021,8 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     
     //***************generate list of all available attributes*********//
     var tempList = [];
-    for(i=0;i<elements.length;i++){
-        var obj = elements[0];
+    for(i=0;i<PIV.attributes.elementList.length;i++){
+        var obj = PIV.attributes.elementList[0];
         attL = obj.userData;
             //console.log(attL);
             //console.log(Object.keys(attL).length);
@@ -1068,7 +1066,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
             mouse3D.sub(PIV.camera.position);
             mouse3D.normalize();
             var raycaster = new THREE.Raycaster(PIV.camera.position, mouse3D);
-            var intersects = raycaster.intersectObjects(elements);
+            var intersects = raycaster.intersectObjects(PIV.attributes.elementList);
             if(intersects[0]!==undefined){
                 var intObj = intersects[0].object;
                 var vertices = intObj.geometry.vertices;
@@ -1098,11 +1096,11 @@ var PIVOT = function(divToBind, jsonFileData, callback){
                 }
                 else{
                     //console.log("NOPE");
-                    for(i=0;i<elements.length;i++){
-                        if(elements[i].children.length>0){
-                            for(j=0;j<elements[i].children.length;j++){
-                                if (elements[i].children[j].name !== "KEEPER"){
-                                    elements[i].remove(elements[i].children[j]);
+                    for(i=0;i<PIV.attributes.elementList.length;i++){
+                        if(PIV.attributes.elementList[i].children.length>0){
+                            for(j=0;j<PIV.attributes.elementList[i].children.length;j++){
+                                if (PIV.attributes.elementList[i].children[j].name !== "KEEPER"){
+                                    PIV.attributes.elementList[i].remove(PIV.attributes.elementList[i].children[j]);
                                 }
                             }
                         }
@@ -1111,11 +1109,11 @@ var PIVOT = function(divToBind, jsonFileData, callback){
                 }
             }
             else{
-                for(i=0;i<elements.length;i++){
-                        if(elements[i].children.length>0){
-                            for(j=0;j<elements[i].children.length;j++){
-                                if (elements[i].children[j].name !== "KEEPER"){
-                                    elements[i].remove(elements[i].children[j]);
+                for(i=0;i<PIV.attributes.elementList.length;i++){
+                        if(PIV.attributes.elementList[i].children.length>0){
+                            for(j=0;j<PIV.attributes.elementList[i].children.length;j++){
+                                if (PIV.attributes.elementList[i].children[j].name !== "KEEPER"){
+                                    PIV.attributes.elementList[i].remove(PIV.attributes.elementList[i].children[j]);
                                 }
                             }
                         }
@@ -1154,7 +1152,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
             mouse3D.sub(PIV.camera.position);
             mouse3D.normalize();
             var raycaster = new THREE.Raycaster(PIV.camera.position, mouse3D);
-            var intersects = raycaster.intersectObjects(elements);
+            var intersects = raycaster.intersectObjects(PIV.attributes.elementList);
             //********************If something was clicked on********************//
             if(!measuring){
                 //If an object is selected, clear out any previsouly clicked items
@@ -1262,7 +1260,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
                             }
                             //check if Item is part of assembly and for items within assembly i.e. with identical attributes
                             if(data.ASSEMBLY){
-                                var objs = elements;
+                                var objs = PIV.attributes.elementList;
                                 for(i=0;i<objs.length;i++){
                                     var tempL = [];
                                     var obj = objs[i];
@@ -1354,10 +1352,10 @@ var PIVOT = function(divToBind, jsonFileData, callback){
                             var feet = Math.floor(DISTANCE);
                             var inches = Math.round((DISTANCE-feet)*12);
                             window.alert("Distance : " + feet.toString()+"'"+inches.toString()+"\"");
-                            for(i=0;i<elements.length;i++){
-                                if(elements[i].children.length>0){
-                                    for(j=0;j<elements[i].children.length;j++){
-                                        elements[i].remove(elements[i].children[j]);
+                            for(i=0;i<PIV.attributes.elementList.length;i++){
+                                if(PIV.attributes.elementList[i].children.length>0){
+                                    for(j=0;j<PIV.attributes.elementList[i].children.length;j++){
+                                        PIV.attributes.elementList[i].remove(PIV.attributes.elementList[i].children[j]);
                                     }
                                 }
                             }
@@ -1366,10 +1364,10 @@ var PIVOT = function(divToBind, jsonFileData, callback){
                 }
                 if(numMeasurePoints === 2){
                     console.log(numMeasurePoints);
-                    for(i=0;i<elements.length;i++){
-                        if(elements[i].children.length > 0){
-                            for(j=0;j<elements[i].children.length;j++){
-                                elements[i].remove(elements[i].children[j]);
+                    for(i=0;i<PIV.attributes.elementList.length;i++){
+                        if(PIV.attributes.elementList[i].children.length > 0){
+                            for(j=0;j<PIV.attributes.elementList[i].children.length;j++){
+                                PIV.attributes.elementList[i].remove(PIV.attributes.elementList[i].children[j]);
                             }
                         }
                     }
@@ -1422,8 +1420,8 @@ var PIVOT = function(divToBind, jsonFileData, callback){
                 }
                 checkbox.id = opt;
                 checkbox.onclick = function(){
-                    for (var i = 0; i < elements.length; i++){
-                        var element = elements[i];
+                    for (var i = 0; i < PIV.attributes.elementList.length; i++){
+                        var element = PIV.attributes.elementList[i];
                         var changeVisibility = false;
                         if (element.userData.layer == this.id) changeVisibility = true;
                         if (changeVisibility) {
@@ -1548,7 +1546,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     
     //********************GENERATE LIST OF AVAILABLE ATTRIBUTES***********//
     CreateAttributeList = function(){
-        var objects = elements;
+        var objects = PIV.attributes.elementList;
         //console.log(objects);
         var attributeList = [];
         for (i=0;i<objects.length;i++){
@@ -1568,7 +1566,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     }
     
     //******************POPULATE ATTRIBUTE LIST FOR COLOR CODING****************************//
-    document.getElementById("PIVOTcolorByAttribute").onclick = function(){
+    document.getElementById("PIVOTrendering").onclick = function(){
         var attTable = document.getElementById("attTable");
         var attModal = document.getElementById("attModal");
         while(attTable.children.length > 0){
@@ -1607,8 +1605,8 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     colorByAttribute = function(c){
         rendered();
         var testList = [];
-        for(i=0;i<elements.length;i++){
-            var el = elements[i];
+        for(i=0;i<PIV.attributes.elementList.length;i++){
+            var el = PIV.attributes.elementList[i];
             var elData = el.userData;
             var listAtt = elData[c];
             if (listAtt != undefined){
@@ -1620,7 +1618,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
         var numColors = attSet.length;
         var colors = rgbColors(numColors);
         var colorList = shuffle(colors);
-        var objs = elements;
+        var objs = PIV.attributes.elementList;
         var mainAttribute = c;
         for (i=0;i<numColors;i++){
             var color = colorList[i];
@@ -1647,7 +1645,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     rendered = function(){
 //        $(".ColorConsole").css('visibility', 'hidden');
 //        $(".ColorHeader").css('visibility', 'hidden');
-        var objs = elements;
+        var objs = PIV.attributes.elementList;
         for(i=0;i<objs.length;i++){
             var obj = objs[i];
             var originalMat = originalMaterials[i];
@@ -1694,7 +1692,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     
     //******************CREATE LIST OF PROJECT SCOPES defined by layers (ADDED BY DG)***********//
     createScopeList = function(){
-        var objs = elements;
+        var objs = PIV.attributes.elementList;
         var scopeList = [];
         for(i=0;i<objs.length;i++){
             var obj = objs[i];
@@ -1839,8 +1837,8 @@ var PIVOT = function(divToBind, jsonFileData, callback){
                 parentDropdown.firstChild.appendChild(newSpan);
                 //make list of all values for selected filter
                 var valList = [];
-                for (j=0;j<elements.length;j++){
-                    var obj = elements[j];
+                for (j=0;j<PIV.attributes.elementList.length;j++){
+                    var obj = PIV.attributes.elementList[j];
                     var objData = obj.userData;
                     if(objData[filt] !== undefined){
                         valList.push(objData[filt]);
@@ -1929,7 +1927,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
             filterLists.push(valList);
         }
         //console.log(filterLists);
-        var objs = elements;
+        var objs = PIV.attributes.elementList;
         for(i=0;i<objs.length;i++){
             var obj = objs[i];
             var objData = obj.userData;
@@ -2025,7 +2023,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     //********************Call Download ALL when menu clicked*******************************//
     document.getElementById("exportAll").onclick = function(){
         console.log("YO");
-        downloadExcel(elements);
+        downloadExcel(PIV.attributes.elementList);
     }
     
     
@@ -2039,7 +2037,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
         dataExport = [];
         var dataObjs;
         if(l.length === 0){
-            dataObjs = elements;
+            dataObjs = PIV.attributes.elementList;
             console.log("wrong");
         }
         else{
@@ -2049,7 +2047,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
         var dataList = [];
         var tempList = [];
         //add first row of value names
-        for(i=0;i<elements.length;i++){
+        for(i=0;i<PIV.attributes.elementList.length;i++){
             tempList.push(attributeSet[i]);
         }
         dataList.push(tempList);
@@ -2098,10 +2096,10 @@ var PIVOT = function(divToBind, jsonFileData, callback){
         }
         measuring = !measuring;
         if(!measuring){
-            for(i=0;i<elements.length;i++){
-                if(elements[i].children.length > 0){
-                    for(j=0;j<elements[i].children.length;j++){
-                        elements[i].remove(elements[i].children[j]);
+            for(i=0;i<PIV.attributes.elementList.length;i++){
+                if(PIV.attributes.elementList[i].children.length > 0){
+                    for(j=0;j<PIV.attributes.elementList[i].children.length;j++){
+                        PIV.attributes.elementList[i].remove(PIV.attributes.elementList[i].children[j]);
                     }
                 }
             }
@@ -2177,7 +2175,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
                 dayRange.push(itr.next().toDate());
             }
             
-            var objs = elements;
+            var objs = PIV.attributes.elementList;
             for(i=0;i<objs.length;i++){
                 var obj = objs[i];
                 var objData = obj.userData;
@@ -2260,7 +2258,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
         var dateString = currentDate.toISOString();
         var splitDate = dateString.split('T');
         var currentMoment = moment(splitDate[0]);
-        var objs = elements;
+        var objs = PIV.attributes.elementList;
         for(i=0;i<objs.length;i++){
             var obj = objs[i];
             var objData = obj.userData;
@@ -2293,7 +2291,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
         if(timelineToggled === false){
             $("#bottomBar").css("visibility","visible");
             timelineToggled = true;
-            var objs = elements;
+            var objs = PIV.attributes.elementList;
             for(i=0;i<objs.length;i++){
                 visibilityStates.push(objs[i].visible);
                 materialState.push(objs[i].material);
@@ -2302,7 +2300,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
         else{
             $("#bottomBar").css("visibility","hidden"); 
             timelineToggled = false;
-            var objs = elements;
+            var objs = PIV.attributes.elementList;
             for(i=0;i<objs.length;i++){
                 objs[i].visible = visibilityStates[i];
                 objs[i].material = materialState[i];
@@ -2344,18 +2342,34 @@ var PIVOT = function(divToBind, jsonFileData, callback){
 //        addClippingPlane("xz");
 //    }
     
+    
+    //************************OPEN FILE WHEN BUTTON IS CLICKED**************//
+    document.getElementById("PIVOTopenButton").onclick = function(){
+        PIV.jsonLoader.clearFile(event);
+    }
+    
+    document.getElementById("PIVOTopenButton").onchange = function(){
+        PIV.showBlackout();
+        PIV.jsonLoader.openLocalFile(event);
+        $("#openModal").modal("hide");
+    }
+    
+    document.getElementById("fileOpen").onclick = function(){
+        $("#PIVOTopenLocal").css("visibility","visible");
+    }
+    
     //**************************INITIATE VIEWER******************************//
     initViewer(PIV.viewerDiv);
     
     if (jsonFileData !== undefined) {
         PIV.jsonLoader.loadSceneFromJson(jsonFileData);
         zoomExtents();
-        //SPECT.views.storeDefaultView();
+        PIV.views.storeDefaultView();
     }
     
     //************FOR DEMO PURPOSES ONLY*********************************//
-    for(i=0;i<elements.length;i++){
-        var obj = elements[i];
+    for(i=0;i<PIV.attributes.elementList.length;i++){
+        var obj = PIV.attributes.elementList[i];
         var objData = obj.userData;
         var objLayer = objData.layer;
         if (objLayer === "ANNOTATION"){

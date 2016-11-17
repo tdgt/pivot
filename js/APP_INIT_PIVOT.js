@@ -33,22 +33,31 @@ var myPivot;
 //setup Attribute Menu to be correct size
 $(document).on('shown.bs.modal','#attModal', function () {
     var wide = $("#attContent").width();
-    var height = $("attContent").height();
+    var height = $("#attContent").height();
+    var rect1 = document.getElementById("attModal").getBoundingClientRect();
+    var rect2 = document.getElementById("attContent").getBoundingClientRect();
+    var topDiff = rect1.top - rect2.top;
+    $("#attDialog").css("top",topDiff.toString()+"px");
     $("#attModal").css("width",wide.toString()+"px");
     $("#attModal").css("height",height.toString()+"px");
 });
 
 $(document).on('shown.bs.modal','#layerModal', function () {
     var wide = $("#layerContent").width();
-    var height = $("layerContent").height();
+    var height = $("#layerContent").height();
+    var rect1 = document.getElementById("layerModal").getBoundingClientRect();
+    var rect2 = document.getElementById("layerContent").getBoundingClientRect();
+    var topDiff = rect1.top - rect2.top;
+    $("#layerDialog").css("top",topDiff.toString()+"px");
     $("#layerModal").css("width",wide.toString()+"px");
     $("#layerModal").css("height",height.toString()+"px");
 });
 
 //fires when everything has loaded
 $(document).ready(function(){
+    $("#BLACKOUT").css("visibility","visible");
     //load our sample JSON file from disk
-    $.getJSON("./sampleModels/towerStructure.json", function( data ){
+    $.getJSON("./sampleModels/tester.json", function( data ){
 
         //once loaded, initialize a Spectacles viewer by passing in the div to bind to, the json data, and a callback function
         //where we can enable application functionality in nice clean chunks
@@ -69,9 +78,11 @@ $(document).ready(function(){
 //        });
         myPivot = new PIVOT($("#PIVOT_output"), data, function(app){
             app.layersUI();
+            app.initiateAttributes();
             //app.viewAndSelectionUI();
             //app.layerList();                  
         })
+        $("#BLACKOUT").css("visibility","hidden");
     });
 });
 
