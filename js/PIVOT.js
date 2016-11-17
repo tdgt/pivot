@@ -1409,6 +1409,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
                 //table switch
                 var tr = document.createElement("tr");
                 var layerName = document.createElement("td");
+                layerName.setAttribute("style","width:80%;")
                 var visibility = document.createElement("td");
                 var checkbox = document.createElement("input");
                 checkbox.type = "checkbox";

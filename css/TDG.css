@@ -180,8 +180,8 @@
     border-right: 1px solid #ffffff;
 }
 
-.modal{
-    
+.modal-dialog{
+    max-height: 60%;
 }
 
 .modal-content{
@@ -210,7 +210,17 @@
     pointer-events: all;
 }
 
+.modal-body{
+    overflow-y: scroll;
+    max-height:50%;
+}
+.modal-footer{
+    
+}
 
+.modal-header{
+    
+}
 .centeredCheckbox{
     text-align: center;
 }
@@ -231,4 +241,8 @@
     display: table-cell;
     vertical-align: middle;
     pointer-events:none;
+}
+
+.table > tr{
+    background: #222;
 }
