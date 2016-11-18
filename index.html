@@ -35,6 +35,7 @@
     <script type="text/javascript" src="js/bootstrap-datepicker.js"></script>
     <link href="css/bootstrap-datepicker.css" rel="stylesheet">
     <link rel="stylesheet" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css"> 
+    <link rel="stylesheet" href="fonts/pivotFont/css/pivotStyles.css"> 
 <head>
     <div class = "modal fade" id = "infoModal" tabindex = "-1" role = "dialog" aria-labelledby = "modalLabel" aria-hidden = "true">
         <div class = "modal-dialog" role = "document">
@@ -90,7 +91,7 @@
             <div class="collapse navbar-collapse" id="navbar-collapse-1">
                 <ul class = "nav navbar-nav navbar-right">
                     <li>
-                        <a id = "PIVOTmodelName">DOMINO-DETAILED MODEL</a>
+                        <a id = "PIVOTmodelName">TOWER D PODIUM MODEL</a>
                     </li>
                     <li>
                         <a href = "#" id = "PIVOTinfo" data-toggle = "modal" data-target = "#infoModal"><i class = "fa fa-info-circle" style = "font-size:20px;"></i></a>
@@ -227,7 +228,7 @@
                     </li>
                     <li class = "dropup">
                         <a id = "PIVOTlayers" title = "Layers" href = "#" class="dropdown-toggle" data-toggle="modal" data-target = "#layerModal" role="button" aria-expanded="false">
-                            <span class = "fa-stack fa-rotate-90" style = "font-size:20px; vertical-align:middle;">
+                            <span class = "fa-stack fa-rotate-90" style = "font-size:15px; vertical-align:middle;">
                                 <i class = "fa fa-stop fa-layers fa-stack-1x" style = "left:.30em;opacity:.5;"></i>
                                 <i class = "fa fa-stop fa-layers fa-stack-1x" style = "left:-.15em;color:#fff;opacity:0;"></i>
                                 <i class = "fa fa-stop fa-layers fa-stack-1x" style = "left:0em;opacity:.5;"></i>
@@ -258,10 +259,30 @@
                         <a href = "#" title = "Enable/Disable construction timeline" id = "toggleBottom"><i class = "fa fa-clock-o"></i></a>
                     </li>
                     <li>
-                        <a href = "#" title = "Enable/Disable Measuring Mode" id = "PIVOTmeasure"><i class = "fa fa-thermometer-4"></i></a>
+                        <a href = "#" title = "Enable/Disable Measuring Mode" id = "PIVOTmeasure"><span aria-hidden = "true"class = "pivot-ruler"></span></a>
                     </li>
                     <li>
                         <a href = "#" title = "Enable/Disable Assembly Selection" id = "PIVOTassembly"><i class = "fa fa-cubes"></i></a>
+                    </li>
+                    <li class = "dropup">
+                        <a href =  "#" id = "PIVOTclippingPlanes" title = "Add Section Planes" class = "dropdown-toggle" data-toggle = "dropdown" role = "button" aria-expanded = "false">
+                            <span class = "fa-stack">
+                                <i class = "fa fa-arrows-alt fa-rotate-arrows fa-stack-1x"></i>
+                                <i class = "fa fa-arrows-v fa-stack-1x"></i>
+                            </span>
+                        </a>
+                        <ul class = "dropdown-menu" role = "menu">
+                            <li>
+                                <a href = "#" tabindex = "-1" id = "PIVOTxyClip">XY Plane</a>
+                            </li>
+                            <li>
+                                <a href = "#" tabindex = "-1" id = "PIVOTxzClip">XZ Plane</a>
+                            </li>
+                            <li>
+                                <a href = "#" tabindex = "-1" id = "PIVOTyzClip">YZ Plane</a>
+                            </li>
+                        </ul>
+                        
                     </li>
                 </ul>
             </div>
@@ -310,15 +331,6 @@
                 <a><i class = "fa fa-cog fa-spin fa-3x fa-fw"></i></a>
             </p>
         </div>
-<!--
-        <div id = "PIVOTopenLocal" style = "visibility:hidden;">
-            <h1>Open a .json file</h1>
-            <div>
-                <h3>Open Local File</h3>
-                <input id = "PIVOTopenButton" type = "file" >
-            </div>
-        </div>
--->
         
     </body>
   

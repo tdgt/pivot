@@ -145,7 +145,6 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     
     PIV.hideBlackout = function(){
         $("#BLACKOUT").css("visibility","hidden");
-        console.log("hidden");
     }
     
     //*************************FUNCTIONS FOR OPENING JSON FILE********************//
@@ -1002,6 +1001,7 @@ var PIVOT = function(divToBind, jsonFileData, callback){
             opacity: .5,
         });
     var timelineToggled = false;
+    var clippingPlanes = [];
     
     
     //PIV.layers.CreateLayerUI();
@@ -2325,24 +2325,60 @@ var PIVOT = function(divToBind, jsonFileData, callback){
 //        sphereMesh.position.set(PIV.boundingSphere.center.x,PIV.boundingSphere.center.y,PIV.boundingSphere.center.z);
 //        PIV.scene.add(sphereMesh);
         if(axes === "xz"){
-            var localPlane = new THREE.Plane( new THREE.Vector3( 0, - 1, 0 ), (PIV.boundingSphere.center.y));
+            var xzPlane = new THREE.Plane( new THREE.Vector3( 0, - 1, 0 ), (PIV.boundingSphere.center.y));
+            clippingPlanes.push(xzPlane);
             for(i=0;i<elements.length;i++){
                 var obj = elements[i];
                 if(obj.hasOwnProperty("material")){
-                    obj.material.clippingPlanes = [localPlane];
+                    obj.material.clippingPlanes = clippingPlanes;
                     obj.material.clipShadows = true;
                 }
             }
             PIV.renderer.localClippingEnabled = true;
             //PIV.scene.add(localPlane);
         }
+        
+        else if(axes === "xy"){
+            var xyPlane = new THREE.Plane(new THREE.Vector3(0,0,-1),PIV.boundingSphere.center.z);
+            clippingPlanes.push(xyPlane);
+            for(i=0;i<elements.length;i++){
+                var obj = elements[i];
+                if(obj.hasOwnProperty("material")){
+                    obj.material.clippingPlanes = clippingPlanes;
+                    obj.material.clipShadows = true;
+                }
+            }
+            PIV.renderer.localClippingEnabled = true;
+        }
+        
+        else if(axes === "yz"){
+            var yzPlane = new THREE.Plane(new THREE.Vector3(-1,0,0),PIV.boundingSphere.center.x);
+            clippingPlanes.push(yzPlane)
+            for(i=0;i<elements.length;i++){
+                var obj = elements[i];
+                if(obj.hasOwnProperty("material")){
+                    obj.material.clippingPlanes = clippingPlanes;
+                    obj.material.clipShadows = true;
+                }
+            }
+            PIV.renderer.localClippingEnabled = true;
+        }
     }
     
     //****************ADD CLIPPING PLANE WHEN MENU ITEM IS CLICKED***********//
-//    document.getElementById("PIVOTplane").onclick = function(){
-//        addClippingPlane("xz");
-//    }
+    document.getElementById("PIVOTxyClip").onclick = function(){
+        // Since Y axis is 'Up' in THREE.JS an XY plane will actually be XZ in code
+        addClippingPlane("xz");
+    }
     
+    document.getElementById("PIVOTxzClip").onclick = function(){
+        // Since Y axis is 'Up' in THREE.JS an XZ plane will actually be XY in code
+        addClippingPlane("xy");
+    }
+    
+    document.getElementById("PIVOTyzClip").onclick = function(){
+        addClippingPlane("yz");
+    }
     
     //************************OPEN FILE WHEN BUTTON IS CLICKED**************//
     document.getElementById("PIVOTopenButton").onclick = function(){

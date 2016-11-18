@@ -29,34 +29,42 @@
 
 var mySpectacles;
 var myPivot;
+var layerCount = 0;
+var attCount = 0;
 
 //setup Attribute Menu to be correct size
 $(document).on('shown.bs.modal','#attModal', function () {
-    var wide = $("#attContent").width();
-    var h1 = Number($("#attBody").css("height").replace("px",""));
-    var h2 = Number($("#attHeader").css("height").replace("px",""));
-    var h3 = Number($("#attFooter").css("height").replace("px",""));
-    var height = h1+h2+h3;
-    var rect1 = document.getElementById("attModal").getBoundingClientRect();
-    var rect2 = document.getElementById("attContent").getBoundingClientRect();
-    var topDiff = rect1.top - rect2.top;
-    $("#attDialog").css("top",topDiff.toString()+"px");
-    $("#attModal").css("width",wide.toString()+"px");
-    $("#attModal").css("height",height.toString()+"px");
+    if(attCount === 0){
+        var wide = $("#attContent").width();
+        var h1 = Number($("#attBody").css("height").replace("px",""));
+        var h2 = Number($("#attHeader").css("height").replace("px",""));
+        var h3 = Number($("#attFooter").css("height").replace("px",""));
+        var height = h1+h2+h3;
+        var rect1 = document.getElementById("attModal").getBoundingClientRect();
+        var rect2 = document.getElementById("attContent").getBoundingClientRect();
+        var topDiff = rect1.top - rect2.top;
+        $("#attDialog").css("top",topDiff.toString()+"px");
+        $("#attModal").css("width",wide.toString()+"px");
+        $("#attModal").css("height",height.toString()+"px");
+        attCount++;
+    }
 });
 
 $(document).on('shown.bs.modal','#layerModal', function () {
-    var wide = $("#layerContent").width();
-    var h1 = Number($("#layerBody").css("height").replace("px",""));
-    var h2 = Number($("#layerHeader").css("height").replace("px",""));
-    var h3 = Number($("#layerFooter").css("height").replace("px",""));
-    var height = h1+h2+h3;
-    var rect1 = document.getElementById("layerModal").getBoundingClientRect();
-    var rect2 = document.getElementById("layerContent").getBoundingClientRect();
-    var topDiff = rect1.top - rect2.top;
-    $("#layerDialog").css("top",topDiff.toString()+"px");
-    $("#layerModal").css("width",wide.toString()+"px");
-    $("#layerModal").css("height",height.toString()+"px");
+    if(layerCount === 0){
+        var wide = $("#layerContent").width();
+        var h1 = Number($("#layerBody").css("height").replace("px",""));
+        var h2 = Number($("#layerHeader").css("height").replace("px",""));
+        var h3 = Number($("#layerFooter").css("height").replace("px",""));
+        var height = h1+h2+h3;
+        var rect1 = document.getElementById("layerModal").getBoundingClientRect();
+        var rect2 = document.getElementById("layerContent").getBoundingClientRect();
+        var topDiff = rect1.top - rect2.top;
+        $("#layerDialog").css("top",topDiff.toString()+"px");
+        $("#layerModal").css("width",wide.toString()+"px");
+        $("#layerModal").css("height",height.toString()+"px");
+        layerCount ++;
+    }
 });
 
 //fires when everything has loaded
