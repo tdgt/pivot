@@ -2319,66 +2319,74 @@ var PIVOT = function(divToBind, jsonFileData, callback){
     }
     
     //*************************ADD CLIPPING PLANE****************************//
-    addClippingPlane = function(axes){
-//        var sphereGeo = new THREE.SphereGeometry(PIV.boundingSphere.radius);
-//        var sphereMesh = new THREE.Mesh(sphereGeo, new THREE.MeshLambertMaterial({color: 0xffffff, transparent: true, opacity: 0.25}));
-//        sphereMesh.position.set(PIV.boundingSphere.center.x,PIV.boundingSphere.center.y,PIV.boundingSphere.center.z);
-//        PIV.scene.add(sphereMesh);
-        if(axes === "xz"){
-            var xzPlane = new THREE.Plane( new THREE.Vector3( 0, - 1, 0 ), (PIV.boundingSphere.center.y));
-            clippingPlanes.push(xzPlane);
-            for(i=0;i<elements.length;i++){
-                var obj = elements[i];
-                if(obj.hasOwnProperty("material")){
-                    obj.material.clippingPlanes = clippingPlanes;
-                    obj.material.clipShadows = true;
-                }
-            }
-            PIV.renderer.localClippingEnabled = true;
-            //PIV.scene.add(localPlane);
-        }
-        
-        else if(axes === "xy"){
-            var xyPlane = new THREE.Plane(new THREE.Vector3(0,0,-1),PIV.boundingSphere.center.z);
-            clippingPlanes.push(xyPlane);
-            for(i=0;i<elements.length;i++){
-                var obj = elements[i];
-                if(obj.hasOwnProperty("material")){
-                    obj.material.clippingPlanes = clippingPlanes;
-                    obj.material.clipShadows = true;
-                }
-            }
-            PIV.renderer.localClippingEnabled = true;
-        }
-        
-        else if(axes === "yz"){
-            var yzPlane = new THREE.Plane(new THREE.Vector3(-1,0,0),PIV.boundingSphere.center.x);
-            clippingPlanes.push(yzPlane)
-            for(i=0;i<elements.length;i++){
-                var obj = elements[i];
-                if(obj.hasOwnProperty("material")){
-                    obj.material.clippingPlanes = clippingPlanes;
-                    obj.material.clipShadows = true;
-                }
-            }
-            PIV.renderer.localClippingEnabled = true;
-        }
-    }
-    
-    //****************ADD CLIPPING PLANE WHEN MENU ITEM IS CLICKED***********//
-    document.getElementById("PIVOTxyClip").onclick = function(){
-        // Since Y axis is 'Up' in THREE.JS an XY plane will actually be XZ in code
-        addClippingPlane("xz");
-    }
-    
-    document.getElementById("PIVOTxzClip").onclick = function(){
-        // Since Y axis is 'Up' in THREE.JS an XZ plane will actually be XY in code
-        addClippingPlane("xy");
-    }
-    
-    document.getElementById("PIVOTyzClip").onclick = function(){
-        addClippingPlane("yz");
-    }
+//    var clipPlaneMat = new THREE.MeshBasicMaterial({
+//        color: 0xffffff, transparent: true, opacity: 0.25
+//    });
+//    
+//    addClippingPlane = function(axes){
+////        var sphereGeo = new THREE.SphereGeometry(PIV.boundingSphere.radius);
+////        var sphereMesh = new THREE.Mesh(sphereGeo, new THREE.MeshLambertMaterial({color: 0xffffff, transparent: true, opacity: 0.25}));
+////        sphereMesh.position.set(PIV.boundingSphere.center.x,PIV.boundingSphere.center.y,PIV.boundingSphere.center.z);
+////        PIV.scene.add(sphereMesh);
+//        
+//        if(axes === "xz"){
+//            var xzPlane = new THREE.Plane( new THREE.Vector3( 0, - 1, 0 ), (PIV.boundingSphere.center.y));
+//            var control = new THREE.TransformControls(PIV.camera,PIV.renderer.domElement);
+//            clippingPlanes.push(xzPlane);
+//            for(i=0;i<elements.length;i++){
+//                var obj = elements[i];
+//                if(obj.hasOwnProperty("material")){
+//                    obj.material.clippingPlanes = clippingPlanes;
+//                    obj.material.clipShadows = true;
+//                }
+//            }
+//            PIV.renderer.localClippingEnabled = true;
+//            //control.attach(sphereMesh);
+//            //PIV.scene.add(control);
+//            //PIV.scene.add(localPlane);
+//        }
+//        
+//        else if(axes === "xy"){
+//            var xyPlane = new THREE.Plane(new THREE.Vector3(0,0,-1),PIV.boundingSphere.center.z);
+//            clippingPlanes.push(xyPlane);
+//            for(i=0;i<elements.length;i++){
+//                var obj = elements[i];
+//                if(obj.hasOwnProperty("material")){
+//                    obj.material.clippingPlanes = clippingPlanes;
+//                    obj.material.clipShadows = true;
+//                }
+//            }
+//            PIV.renderer.localClippingEnabled = true;
+//        }
+//        
+//        else if(axes === "yz"){
+//            var yzPlane = new THREE.Plane(new THREE.Vector3(-1,0,0),PIV.boundingSphere.center.x);
+//            clippingPlanes.push(yzPlane)
+//            for(i=0;i<elements.length;i++){
+//                var obj = elements[i];
+//                if(obj.hasOwnProperty("material")){
+//                    obj.material.clippingPlanes = clippingPlanes;
+//                    obj.material.clipShadows = true;
+//                }
+//            }
+//            PIV.renderer.localClippingEnabled = true;
+//        }
+//    }
+//    
+//    //****************ADD CLIPPING PLANE WHEN MENU ITEM IS CLICKED***********//
+//    document.getElementById("PIVOTxyClip").onclick = function(){
+//        // Since Y axis is 'Up' in THREE.JS an XY plane will actually be XZ in code
+//        addClippingPlane("xz");
+//    }
+//    
+//    document.getElementById("PIVOTxzClip").onclick = function(){
+//        // Since Y axis is 'Up' in THREE.JS an XZ plane will actually be XY in code
+//        addClippingPlane("xy");
+//    }
+//    
+//    document.getElementById("PIVOTyzClip").onclick = function(){
+//        addClippingPlane("yz");
+//    }
     
     //************************OPEN FILE WHEN BUTTON IS CLICKED**************//
     document.getElementById("PIVOTopenButton").onclick = function(){
